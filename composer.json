@@ -1,0 +1,17 @@
+{
+    "name": "aaemnnosttv/wp-cli-login-command",
+    "description": "",
+    "homepage": "https://github.com/aaemnnosttv/wp-cli-login-command",
+    "license": "MIT",
+    "authors": [],
+    "minimum-stability": "dev",
+    "autoload": {
+        "files": [ "command.php" ]
+    },
+    "require": {
+        "wp-cli/wp-cli": "~0.23.0"
+    },
+    "require-dev": {
+        "behat/behat": "~2.5"
+    }
+}
