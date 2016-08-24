@@ -155,3 +155,13 @@ $steps->Given('/^a misconfigured WP_CONTENT_DIR constant directory$/',
 		file_put_contents( $wp_config_path, $wp_config_code );
 	}
 );
+
+
+$steps->Given('/^a running web server$/', function($world) {
+    $world->background_proc(
+        \WP_CLI\utils\esc_cmd(
+            'php -S 127.0.0.1:8888 -t %s',
+            $world->variables['RUN_DIR']
+        )
+    );
+});

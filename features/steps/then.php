@@ -189,4 +189,3 @@ $steps->Then( '/^the (.+) (file|directory) should (exist|not exist|be:|contain:|
 		}
 	}
 );
-
