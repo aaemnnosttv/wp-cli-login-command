@@ -5,7 +5,7 @@ namespace WP_CLI_Login;
 use WP_CLI;
 use WP_User;
 
-if ( ! class_exists('WP_CLI')) {
+if (! class_exists('WP_CLI')) {
     return;
 }
 
@@ -14,33 +14,35 @@ WP_CLI::add_command('login', LoginCommand::class);
 class LoginCommand
 {
     /**
-    * Option key for the current magic login endpoint.
-    */
+     * Option key for the current magic login endpoint.
+     */
     const ENDPOINT_OPTION = 'wp_cli_login_endpoint';
 
     /**
-    * Companion plugin file path, relative to plugins directory.
-    */
+     * Companion plugin file path, relative to plugins directory.
+     */
     const PLUGIN_FILE = 'wp-cli-login-server/wp-cli-login-server.php';
 
     /**
-    * Get a magic login URL for the given user.
-    *
-    * <user-locator>
-    * : A string which identifies the user to be logged in as.
-    * Possible values are: User ID, User Login, or User Email.
-    *
-    * [--url-only]
-    * : Output the magic link URL only.
-    *
-    * [--launch]
-    * : Launch the magic url immediately in your web browser.
-    *
-    * @param $_
-    * @param $assoc
-    *
-    * @subcommand as
-    */
+     * Get a magic login URL for the given user.
+     *
+     * ## OPTIONS
+     *
+     * <user-locator>
+     * : A string which identifies the user to be logged in as.
+     * Possible values are: User ID, User Login, or User Email.
+     *
+     * [--url-only]
+     * : Output the magic link URL only.
+     *
+     * [--launch]
+     * : Launch the magic url immediately in your web browser.
+     *
+     * @param $_
+     * @param $assoc
+     *
+     * @subcommand as
+     */
     public function as_($_, $assoc)
     {
         list($user_locator) = $_;
@@ -101,22 +103,22 @@ class LoginCommand
     }
 
     /**
-    * Disable the companion plugin.
-    *
-    * @alias deactivate
-    */
-    public function disable()
+     * Deactivate the companion plugin.
+     *
+     * @alias disable
+     */
+    public function deactivate()
     {
         static::debug('Deactivating companion plugin.');
 
-        WP_CLI::run_command(['plugin','deactivate','wp-cli-login-server']);
+        WP_CLI::run_command(['plugin', 'deactivate', 'wp-cli-login-server']);
     }
 
     /**
-    * Launch the magic link URL in the default browser.
-    *
-    * @param $url
-    */
+     * Launch the magic link URL in the default browser.
+     *
+     * @param $url
+     */
     protected function launch($url)
     {
         static::debug('Attempting to launch magic login with system browser...');
@@ -133,29 +135,32 @@ class LoginCommand
     }
 
     /**
-    * Create the endpoint if it does not exist, and return the current value.
-    *
-    * @return string
-    */
+     * Create the endpoint if it does not exist, and return the current value.
+     *
+     * @return string
+     */
     protected function endpoint()
     {
         /**
-        * Create the endpoint if it does not exist yet.
-        */
+         * Create the endpoint if it does not exist yet.
+         */
         add_option(static::ENDPOINT_OPTION, uniqid());
 
         return get_option(static::ENDPOINT_OPTION);
     }
 
     /**
-    * Install/update the server plugin.
-    *
-    * Overwrites existing installed plugin, if any.
-    *
-    * [--activate]
-    *
-    * @todo Update this to use versioning.
-    */
+     * Install/update the server plugin.
+     *
+     * ## OPTIONS
+     *
+     * Overwrites existing installed plugin, if any.
+     *
+     * [--activate]
+     * : Activate the plugin after installing.
+     *
+     * @todo Update this to use versioning.
+     */
     public function install($_, $assoc)
     {
         static::debug('Installing/refreshing companion plugin.');
@@ -164,8 +169,8 @@ class LoginCommand
 
         // update / overwrite / refresh installed plugin file
         copy(
-        __DIR__ . '/plugin/wp-cli-login-server.php',
-        WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE
+            __DIR__ . '/plugin/wp-cli-login-server.php',
+            WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE
         );
 
         if (file_exists(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE)) {
@@ -178,13 +183,13 @@ class LoginCommand
     }
 
     /**
-    * Activate the companion plugin.
-    */
+     * Activate the companion plugin.
+     */
     public function activate()
     {
         static::debug('Activating companion plugin.');
 
-        WP_CLI::run_command(['plugin','activate','wp-cli-login-server']);
+        WP_CLI::run_command(['plugin', 'activate', 'wp-cli-login-server']);
     }
 
     /**
@@ -199,9 +204,10 @@ class LoginCommand
     }
 
     /**
-    * Log to debug.
-    * @param $message
-    */
+     * Log to debug.
+     *
+     * @param $message
+     */
     public static function debug($message)
     {
         WP_CLI::debug("[login] $message");
