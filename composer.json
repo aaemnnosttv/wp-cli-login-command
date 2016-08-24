@@ -1,6 +1,6 @@
 {
     "name": "aaemnnosttv/wp-cli-login-command",
-    "description": "Login to WordPress with secure passwordless magic links.",
+    "description": "Login to WordPress with secure passwordless links.",
     "homepage": "https://github.com/aaemnnosttv/wp-cli-login-command",
     "license": "MIT",
     "authors": [
