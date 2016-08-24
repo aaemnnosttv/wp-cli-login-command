@@ -45,38 +45,12 @@ class LoginCommand
      */
     public function as_($_, $assoc)
     {
-        list($user_locator) = $_;
-
         $this->requirePluginActivation();
 
-        /**
-        * WP_User does not accept a email in the constructor,
-        * however an ID or user_login works just fine.
-        * If the locator is a valid email address, use that,
-        * otherwise, fallback to the constructor.
-        */
-        if (filter_var($user_locator, FILTER_VALIDATE_EMAIL)) {
-            $user = get_user_by('email', $user_locator);
-        }
-        if (empty($user) || ! $user->exists()) {
-            $user = new WP_User($user_locator);
-        }
+        list($user_locator) = $_;
 
-        if (! $user->exists()) {
-            WP_CLI::error("No user found by: $user_locator");
-        }
-
-        $endpoint   = $this->endpoint();
-        $public     = md5(uniqid()) . md5(uniqid());
-        $private    = wp_hash_password("$public|$endpoint|{$user->ID}");
-        $magic_link = add_query_arg(['magic_login' => urlencode($public)], home_url($endpoint));
-        $magic      = [
-            'user'    => $user->ID,
-            'private' => $private,
-            'time'    => time(),
-        ];
-
-        set_transient("wp-cli-login/$endpoint/$public", json_encode($magic), MINUTE_IN_SECONDS * 5);
+        $user       = $this->lookupUser($user_locator);
+        $magic_link = $this->makeMagicUrl($user);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_link);
@@ -193,9 +167,61 @@ class LoginCommand
     }
 
     /**
-    * Check active status of the companion plugin, and stop execution if it is not,
-    * with instructions as to how to proceed.
-    */
+     * Create a magic login URL
+     *
+     * @param  WP_User $user User to create login URL for
+     *
+     * @return string  URL
+     */
+    protected function makeMagicUrl(WP_User $user)
+    {
+        $endpoint = $this->endpoint();
+        $public   = md5(uniqid()) . md5(uniqid());
+        $private  = wp_hash_password("$public|$endpoint|{$user->ID}");
+        $magic    = [
+            'user'    => $user->ID,
+            'private' => $private,
+            'time'    => time(),
+        ];
+
+        set_transient("wp-cli-login/$endpoint/$public", json_encode($magic), MINUTE_IN_SECONDS * 5);
+
+        return add_query_arg(['magic_login' => urlencode($public)], home_url($endpoint));
+    }
+
+    /**
+     * Get the target user by the given locator.
+     *
+     * @param  mixed $locator User login, ID, or email address
+     *
+     * @return WP_User
+     */
+    protected function lookupUser($locator)
+    {
+        /**
+         * WP_User does not accept a email in the constructor,
+         * however an ID or user_login works just fine.
+         * If the locator is a valid email address, use that,
+         * otherwise, fallback to the constructor.
+         */
+        if (filter_var($locator, FILTER_VALIDATE_EMAIL)) {
+            $user = get_user_by('email', $locator);
+        }
+        if (empty($user) || ! $user->exists()) {
+            $user = new WP_User($locator);
+        }
+
+        if (! $user->exists()) {
+            WP_CLI::error("No user found by: $locator");
+        }
+
+        return $user;
+    }
+
+    /**
+     * Check active status of the companion plugin, and stop execution if it is not,
+     * with instructions as to how to proceed.
+     */
     protected function requirePluginActivation()
     {
         if (! is_plugin_active(static::PLUGIN_FILE)) {
