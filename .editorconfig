@@ -11,7 +11,7 @@ trim_trailing_whitespace = true
 indent_style = space
 indent_size = 4
 
-[{.jshintrc,*.json,*.yml,*.feature}]
+[{.jshintrc,*.yml,*.feature}]
 indent_size = 2
 
 [{*.txt,wp-config-sample.php}]
