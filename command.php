@@ -11,6 +11,10 @@ if (! class_exists('WP_CLI')) {
 
 WP_CLI::add_command('login', LoginCommand::class);
 
+
+/**
+ * Manage magic passwordless logins.
+ */
 class LoginCommand
 {
     /**
