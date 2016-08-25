@@ -185,18 +185,35 @@ class LoginCommand
      */
     private function makeMagicUrl(WP_User $user)
     {
+        static::debug("Generating a new magic login for User # $user->ID");
+
+        $domain   = $this->domain();
         $endpoint = $this->endpoint();
-        $public   = md5(uniqid()) . md5(uniqid());
-        $private  = wp_hash_password("$public|$endpoint|{$user->ID}");
+        $public   = $this->newPublicKey();
+        $private  = wp_hash_password("$public|$endpoint|$domain|$user->ID");
         $magic    = [
             'user'    => $user->ID,
             'private' => $private,
             'time'    => time(),
         ];
 
-        set_transient("wp-cli-login/$endpoint/$public", json_encode($magic), MINUTE_IN_SECONDS * 5);
+        set_transient("wp-cli-login/$public", json_encode($magic), MINUTE_IN_SECONDS * 5);
 
-        return add_query_arg(['magic_login' => urlencode($public)], home_url($endpoint));
+        return home_url("$endpoint/$public");
+    }
+
+    /**
+     * Generate a new cryptographically sound public key.
+     *
+     * @return string
+     */
+    private function newPublicKey()
+    {
+        return implode('-', array_map('bin2hex', [
+            random_bytes(random_int(3, 7)),
+            random_bytes(random_int(4, 7)),
+            random_bytes(random_int(5, 7)),
+        ]));
     }
 
     /**
@@ -237,6 +254,15 @@ class LoginCommand
         if (! is_plugin_active(static::PLUGIN_FILE)) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
         }
+    }
+
+    /**
+     * Get the domain of the current site.
+     * @return mixed
+     */
+    private function domain()
+    {
+        return parse_url(home_url(), PHP_URL_HOST);
     }
 
     /**

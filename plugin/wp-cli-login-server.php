@@ -184,7 +184,7 @@ class WP_CLI_Login_Server
      */
     private function magicKey()
     {
-        return "wp-cli-login/$this->endpoint/$this->publicKey";
+        return "wp-cli-login/$this->publicKey";
     }
 }
 
