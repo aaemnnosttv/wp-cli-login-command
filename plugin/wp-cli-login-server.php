@@ -15,38 +15,42 @@ use stdClass;
 use WP_User;
 use Exception;
 
-if (
-    is_admin()
-    || defined('WP_CLI')
-    || defined('DOING_AJAX')
-    || 'GET' != strtoupper($_SERVER['REQUEST_METHOD'])
-    || (! $magic_pass = filter_input(INPUT_GET, 'magic_login'))
+/**
+ * Rule out the easy non-requests.
+ */
+if (defined('WP_CLI')                                   // ignore cli requests
+    || defined('DOING_AJAX')                            // ignore ajax requests
+    || is_admin()                                       // ignore admin requests
+    || count($_GET)                                     // if there is any query string
+    || 'GET' != strtoupper($_SERVER['REQUEST_METHOD'])  // GET requests only
 ) {
     return;
 }
 
-add_action('plugins_loaded', function () use ($magic_pass) {
-    WP_CLI_Login_Server::handle($magic_pass);
+/**
+ * Fire up the server
+ */
+add_action('plugins_loaded', function () {
+    $request = trim($_SERVER['REQUEST_URI'], '/');
+    list($endpoint, $public) = explode('/', $request);
+
+    WP_CLI_Login_Server::handle($endpoint, $public);
 });
 
-unset($magic_pass);
 
-/**
- * Manage magic passwordless logins.
- */
+
 class WP_CLI_Login_Server
 {
+    /**
+     * The http endpoint triggering the request.
+     */
+    private $endpoint;
+
     /**
      * Public key passed to identify the unique magic login.
      * @var string
      */
     private $publicKey;
-
-    /**
-     * Endpoint to listen for magic login requests.
-     * @var string
-     */
-    private $endpoint;
 
     /**
      * Option key for the current magic login endpoint.
@@ -56,24 +60,24 @@ class WP_CLI_Login_Server
     /**
      * WP_CLI_Login_Server constructor.
      *
-     * @param $publicKey
      * @param $endpoint
+     * @param $publicKey
      */
-    public function __construct($publicKey, $endpoint)
+    public function __construct($endpoint, $publicKey)
     {
+        $this->endpoint = $endpoint;
         $this->publicKey = $publicKey;
-        $this->endpoint  = $endpoint;
     }
 
     /**
      * Handle a new magic login request.
      *
+     * @param $endpoint
      * @param $publicKey
      */
-    public static function handle($publicKey)
+    public static function handle($endpoint, $publicKey)
     {
-        $endpoint = trim(parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH), '/');
-        $server = new static($publicKey, $endpoint);
+        $server = new static($endpoint, $publicKey);
 
         if ($server->checkEndpoint()) {
             $server->run();
@@ -109,19 +113,21 @@ class WP_CLI_Login_Server
      *
      * @param stdClass $magic
      *
-     * @return WP_User
-     *
      * @throws AuthenticationFailure
      * @throws InvalidUser
+     *
+     * @return WP_User
      */
     private function validate(stdClass $magic)
     {
         if (empty($magic->user) || (! $user = new WP_User($magic->user)) || ! $user->exists()) {
-            throw new InvalidUser("No user found or no longer exists.");
+            throw new InvalidUser('No user found or no longer exists.');
         }
 
-        if (empty($magic->private) || ! wp_check_password("$this->publicKey|$this->endpoint|{$user->ID}", $magic->private)) {
-            throw new AuthenticationFailure("Magic login authentication failed.");
+        $domain = parse_url(home_url(), PHP_URL_HOST);
+
+        if (empty($magic->private) || ! wp_check_password("$this->publicKey|$this->endpoint|$domain|$user->ID", $magic->private)) {
+            throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
         return $user;
@@ -154,12 +160,10 @@ class WP_CLI_Login_Server
      */
     private function loginUser(WP_User $user)
     {
-        add_action('template_redirect', function () use ($user) {
-            delete_transient($this->magicKey());
-            wp_set_auth_cookie($user->ID);
-            wp_redirect(admin_url());
-            exit;
-        }, 1);
+        delete_transient($this->magicKey());
+        wp_set_auth_cookie($user->ID);
+        wp_redirect(admin_url());
+        exit;
     }
 
     /**
