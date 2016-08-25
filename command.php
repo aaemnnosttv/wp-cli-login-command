@@ -28,6 +28,11 @@ class LoginCommand
     const PLUGIN_FILE = 'wp-cli-login-server/wp-cli-login-server.php';
 
     /**
+     * Required version of the wp-cli-login-server companion plugin.
+     */
+    const REQUIRED_PLUGIN_VERSION = '1.0';
+
+    /**
      * Get a magic login URL for the given user.
      *
      * ## OPTIONS
