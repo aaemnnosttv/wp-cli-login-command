@@ -54,7 +54,7 @@ class LoginCommand
      */
     public function as_($_, $assoc)
     {
-        $this->requirePluginActivation();
+        $this->ensurePluginRequirementsMet();
 
         list($user_locator) = $_;
 
@@ -121,7 +121,7 @@ class LoginCommand
      */
     private function renderEmailTemplate($template_file, $user)
     {
-        $this->requirePluginActivation();
+        $this->ensurePluginRequirementsMet();
 
         $magic_url = $this->makeMagicUrl($user);
         $domain  = $this->domain();
@@ -180,8 +180,6 @@ class LoginCommand
      *
      * [--activate]
      * : Activate the plugin after installing.
-     *
-     * @todo Update this to use versioning.
      */
     public function install($_, $assoc)
     {
@@ -306,13 +304,25 @@ class LoginCommand
     }
 
     /**
-     * Check active status of the companion plugin, and stop execution if it is not,
-     * with instructions as to how to proceed.
+     * Check that the login server plugin meets all necessary requirements.
+     * If any criteria is not met, abort with instructions as to how to proceed.
      */
-    private function requirePluginActivation()
+    private function ensurePluginRequirementsMet()
     {
         if (! is_plugin_active(static::PLUGIN_FILE)) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
+        }
+
+        $installed = get_plugin_data(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE);
+
+        if (! version_compare($installed['Version'], static::REQUIRED_PLUGIN_VERSION, '=')) {
+            WP_CLI::error(
+                sprintf('The login command requires version %s of %s, but version %s is installed. Run `wp login install` to upgrade it.',
+                    static::REQUIRED_PLUGIN_VERSION,
+                    $installed['Name'],
+                    $installed['Version']
+                )
+            );
         }
     }
 
