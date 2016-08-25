@@ -53,20 +53,20 @@ class LoginCommand
 
         list($user_locator) = $_;
 
-        $user       = $this->lookupUser($user_locator);
-        $magic_link = $this->makeMagicUrl($user);
+        $user      = $this->lookupUser($user_locator);
+        $magic_url = $this->makeMagicUrl($user);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
-            WP_CLI::line($magic_link);
+            WP_CLI::line($magic_url);
             exit;
         }
 
         WP_CLI::success('Magic login link created!');
-        WP_CLI::line($magic_link);
+        WP_CLI::line($magic_url);
         WP_CLI::line('This link will self-destruct in 5 minutes, or as soon as it is used; whichever comes first.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
-            $this->launch($magic_link);
+            $this->launch($magic_url);
         }
     }
 
