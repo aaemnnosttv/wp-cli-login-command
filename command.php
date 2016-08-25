@@ -278,6 +278,8 @@ class LoginCommand
      */
     private function lookupUser($locator)
     {
+        static::debug("Looking up user by '$locator'");
+
         /**
          * WP_User does not accept a email in the constructor,
          * however an ID or user_login works just fine.
