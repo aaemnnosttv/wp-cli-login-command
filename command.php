@@ -70,6 +70,59 @@ class LoginCommand
         }
     }
 
+    /**
+     * Email a magic login link to the given user.
+     *
+     * ## OPTIONS
+     *
+     * <user-locator>
+     * : A string which identifies the user to be logged in as.
+     * Possible values are: User ID, User Login, or User Email.
+     *
+     * [--template=<path-to-template-file>]
+     * : The path to a file to use for a custom email template.
+     * Uses Mustache templating for dynamic html.
+     *
+     * @param $_
+     * @param $assoc
+     */
+    public function email($_, $assoc)
+    {
+        list($user_locator) = $_;
+
+        $user          = $this->lookupUser($user_locator);
+        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', __DIR__ . '/template/email-default.mustache');
+        $html_rendered = $this->renderEmailTemplate($template_file, $user);
+        $domain        = $this->domain();
+        $headers       = [
+            'Content-Type: text/html',
+            "From: WordPress <no-reply@{$domain}>",
+        ];
+
+        if (! wp_mail($user->user_email, "Magic sign-in link for $domain", $html_rendered, $headers)) {
+            WP_CLI::error('Email failed to send.');
+        }
+
+        WP_CLI::success('Email sent.');
+    }
+
+    /**
+     * Render the given email template, for the given user.
+     *
+     * @param $template_file
+     * @param $user
+     *
+     * @return string
+     */
+    private function renderEmailTemplate($template_file, $user)
+    {
+        $this->requirePluginActivation();
+
+        $magic_url = $this->makeMagicUrl($user);
+        $domain  = $this->domain();
+
+        return \WP_CLI\Utils\mustache_render($template_file, compact('magic_url','domain'));
+    }
 
     /**
      * Invalidate any existing magic links.
