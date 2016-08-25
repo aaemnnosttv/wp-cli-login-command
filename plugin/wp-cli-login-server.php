@@ -32,7 +32,13 @@ if (defined('WP_CLI')                                   // ignore cli requests
  */
 add_action('plugins_loaded', function () {
     $request = trim($_SERVER['REQUEST_URI'], '/');
-    list($endpoint, $public) = explode('/', $request);
+    $fragments = explode('/', $request);
+
+    if (2 !== count($fragments)) {
+        return;
+    }
+
+    list($endpoint, $public) = $fragments;
 
     WP_CLI_Login_Server::handle($endpoint, $public);
 });
