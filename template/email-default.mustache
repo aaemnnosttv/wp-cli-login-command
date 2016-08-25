@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body style="font-family: sans-serif;">
+<div style="max-width: 550px; margin: 0 auto;">
+    <h2>Hello there,</h2>
+
+    <p>Here is your magic link for quickly signing in to your account on {{ domain }}.</p>
+
+    <div style="text-align: center; font-size: 1.25em; margin: 2em 0">
+        <a href="{{ magic_url }}"
+           style="
+            background-color: #0073aa;
+            color: white;
+            padding: 7px 15px;
+            text-decoration: none;
+           ">Sign in to {{ domain }}</a>
+    </div>
+
+    <p style="color: gray; font-size: 0.8em; text-align: center; max-width: 300px; margin: 0 auto;">
+        You may copy/paste this URL into your browser:<br>
+        {{ magic_url }}
+    </p>
+
+    <p style="color: #444444;"><strong>This login link, whether or not you choose to accept it, will self-destruct in 5 minutes.</strong></p>
+</div>
+</body>
+</html>
