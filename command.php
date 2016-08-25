@@ -104,6 +104,8 @@ class LoginCommand
             "From: WordPress <no-reply@{$domain}>",
         ];
 
+        static::debug("Sending email to $user->user_email");
+
         if (! wp_mail($user->user_email, "Magic sign-in link for $domain", $html_rendered, $headers)) {
             WP_CLI::error('Email failed to send.');
         }
