@@ -24,10 +24,6 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
       http://localhost:8888/
       """
-    And STDOUT should contain:
-      """
-      ?magic_login=
-      """
     And STDOUT should not contain:
       """
       Success: Magic login link created!
