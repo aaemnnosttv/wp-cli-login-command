@@ -86,7 +86,7 @@ class LoginCommand
      *
      * @param $url
      */
-    protected function launch($url)
+    private function launch($url)
     {
         static::debug('Attempting to launch magic login with system browser...');
 
@@ -106,7 +106,7 @@ class LoginCommand
      *
      * @return string
      */
-    protected function endpoint()
+    private function endpoint()
     {
         add_option(static::ENDPOINT_OPTION, uniqid());
 
@@ -183,7 +183,7 @@ class LoginCommand
      *
      * @return string  URL
      */
-    protected function makeMagicUrl(WP_User $user)
+    private function makeMagicUrl(WP_User $user)
     {
         $endpoint = $this->endpoint();
         $public   = md5(uniqid()) . md5(uniqid());
@@ -206,7 +206,7 @@ class LoginCommand
      *
      * @return WP_User
      */
-    protected function lookupUser($locator)
+    private function lookupUser($locator)
     {
         /**
          * WP_User does not accept a email in the constructor,
@@ -232,7 +232,7 @@ class LoginCommand
      * Check active status of the companion plugin, and stop execution if it is not,
      * with instructions as to how to proceed.
      */
-    protected function requirePluginActivation()
+    private function requirePluginActivation()
     {
         if (! is_plugin_active(static::PLUGIN_FILE)) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
@@ -244,7 +244,7 @@ class LoginCommand
      *
      * @param $message
      */
-    public static function debug($message)
+    private static function debug($message)
     {
         WP_CLI::debug("[login] $message");
     }
