@@ -66,26 +66,15 @@ class LoginCommand
         }
     }
 
+
     /**
-    * Invalidate any existing magic links.
-    */
+     * Invalidate any existing magic links.
+     */
     public function invalidate()
     {
         update_option(static::ENDPOINT_OPTION, uniqid());
 
-        WP_CLI::success("Magic links invalidated.");
-    }
-
-    /**
-     * Deactivate the companion plugin.
-     *
-     * @alias disable
-     */
-    public function deactivate()
-    {
-        static::debug('Deactivating companion plugin.');
-
-        WP_CLI::run_command(['plugin', 'deactivate', 'wp-cli-login-server']);
+        WP_CLI::success('Magic links invalidated.');
     }
 
     /**
@@ -152,18 +141,38 @@ class LoginCommand
         }
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'activate')) {
-            $this->activate();
+            $this->toggle(['on']);
         }
     }
 
     /**
-     * Activate the companion plugin.
+     * Toggle the active state of the companion plugin.
+     *
+     * [<on|off>]
+     * : Toggle the companion plugin on or off.
+     * Default: toggles active status.
+     * ---
+     * options:
+     *   - on
+     *   - off
+     * ---
+     * @param $_
      */
-    public function activate()
+    public function toggle($_)
     {
-        static::debug('Activating companion plugin.');
+        if (($setState = reset($_)) && ! in_array($setState, ['on','off'])) {
+            WP_CLI::error('Invalid toggle value. Possible options are "on" and "off".');
+        }
 
-        WP_CLI::run_command(['plugin', 'activate', 'wp-cli-login-server']);
+        if (! $setState) {
+            $setState = is_plugin_active(static::PLUGIN_FILE) ? 'off' : 'on';
+        }
+
+        self::debug("Toggling companion plugin: $setState");
+
+        $command = $setState == 'on' ? 'activate' : 'deactivate';
+
+        WP_CLI::run_command(['plugin', $command, 'wp-cli-login-server']);
     }
 
     /**
