@@ -130,9 +130,7 @@ class WP_CLI_Login_Server
             throw new InvalidUser('No user found or no longer exists.');
         }
 
-        $domain = parse_url(home_url(), PHP_URL_HOST);
-
-        if (empty($magic->private) || ! wp_check_password("$this->publicKey|$this->endpoint|$domain|$user->ID", $magic->private)) {
+        if (empty($magic->private) || ! wp_check_password($this->signature($user), $magic->private)) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
@@ -195,6 +193,20 @@ class WP_CLI_Login_Server
     private function magicKey()
     {
         return "wp-cli-login/$this->publicKey";
+    }
+
+    /**
+     * Build the signature to check against the private key for this request.
+     *
+     * @param WP_User $user
+     *
+     * @return string
+     */
+    private function signature(WP_User $user)
+    {
+        $domain = parse_url(home_url(), PHP_URL_HOST);
+
+        return "$this->publicKey|$this->endpoint|$domain|$user->ID";
     }
 }
 
