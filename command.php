@@ -108,9 +108,6 @@ class LoginCommand
      */
     protected function endpoint()
     {
-        /**
-         * Create the endpoint if it does not exist yet.
-         */
         add_option(static::ENDPOINT_OPTION, uniqid());
 
         return get_option(static::ENDPOINT_OPTION);
