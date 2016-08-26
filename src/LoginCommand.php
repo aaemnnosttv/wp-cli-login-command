@@ -199,7 +199,7 @@ class LoginCommand
     }
 
     /**
-     * Install/update the server plugin.
+     * Install/update the companion server plugin.
      *
      * ## OPTIONS
      *
@@ -234,7 +234,7 @@ class LoginCommand
     }
 
     /**
-     * Toggle the active state of the companion plugin.
+     * Toggle the active state of the companion server plugin.
      *
      * [<on|off>]
      * : Toggle the companion plugin on or off.
