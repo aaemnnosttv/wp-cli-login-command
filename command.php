@@ -50,9 +50,9 @@ class LoginCommand
      * @param $_
      * @param $assoc
      *
-     * @subcommand as
+     * @alias as
      */
-    public function as_($_, $assoc)
+    public function create($_, $assoc)
     {
         $this->ensurePluginRequirementsMet();
 
