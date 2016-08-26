@@ -267,11 +267,24 @@ class LoginCommand
      */
     private function newPublicKey()
     {
-        return implode('-', array_map('bin2hex', [
-            random_bytes(random_int(3, 7)),
-            random_bytes(random_int(4, 7)),
-            random_bytes(random_int(5, 7)),
-        ]));
+        return implode('-', [
+            $this->randomness(3, 5),
+            $this->randomness(3, 5),
+            $this->randomness(3, 5),
+        ]);
+    }
+
+    /**
+     * @param $min
+     * @param $max
+     *
+     * @return string
+     */
+    private function randomness($min, $max = null)
+    {
+        $min = absint($min);
+        $max = absint($max ? $max : $min);
+        return bin2hex(random_bytes(random_int($min, $max)));
     }
 
     /**
