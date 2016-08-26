@@ -59,9 +59,9 @@ class WP_CLI_Login_Server
     private $publicKey;
 
     /**
-     * Option key for the current magic login endpoint.
+     * Option key for the persisted-data.
      */
-    const ENDPOINT_OPTION = 'wp_cli_login_endpoint';
+    const OPTION = 'wp_cli_login';
 
     /**
      * WP_CLI_Login_Server constructor.
@@ -97,7 +97,11 @@ class WP_CLI_Login_Server
      */
     public function checkEndpoint()
     {
-        return ($this->endpoint === get_option(static::ENDPOINT_OPTION));
+        if ($saved = json_decode(get_option(static::OPTION))) {
+            return $this->endpoint === $saved->endpoint;
+        }
+
+        return false;
     }
 
     /**
@@ -192,7 +196,7 @@ class WP_CLI_Login_Server
      */
     private function magicKey()
     {
-        return "wp-cli-login/$this->publicKey";
+        return self::OPTION . '/' . $this->publicKey;
     }
 
     /**
