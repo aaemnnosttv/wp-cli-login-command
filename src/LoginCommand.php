@@ -149,7 +149,17 @@ class LoginCommand
     {
         static::debug('Attempting to launch magic login with system browser...');
 
-        $launch  = preg_match('/^WIN/', PHP_OS) ? 'start' : 'open';
+        if (preg_match('/^darwin/i', PHP_OS)) {
+            $launch = 'open';
+        } elseif (preg_match('/^win/i', PHP_OS)) {
+            $launch = 'start';
+        } elseif (preg_match('/^linux/i', PHP_OS)) {
+            $launch = 'xdg-open';
+        } else {
+            WP_CLI::error('Your operating system does not seem to support launching from the command line.  Please open an issue (https://github.com/aaemnnosttv/wp-cli-login-command/issues) and be sure to include the output from this command: `php -r \'echo PHP_OS;\'`');
+            exit; // make IDE happy.
+        }
+
         $process = WP_CLI\Process::create(sprintf('%s "%s"', $launch, $url));
         $result  = $process->run();
 
