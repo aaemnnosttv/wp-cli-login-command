@@ -104,7 +104,7 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', __DIR__ . '/template/email-default.mustache');
+        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', $this->filePath('template/email-default.mustache'));
         $html_rendered = $this->renderEmailTemplate($template_file, $user);
         $domain        = $this->domain();
         $headers       = [
