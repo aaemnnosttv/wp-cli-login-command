@@ -11,6 +11,9 @@
         }
     ],
     "autoload": {
+        "psr-4": {
+            "WP_CLI_Login\\": "src/"
+        },
         "files": [ "command.php" ]
     },
     "require": {
