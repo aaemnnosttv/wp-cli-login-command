@@ -225,13 +225,17 @@ class LoginCommand
 
         // update / overwrite / refresh installed plugin file
         copy(
-            __DIR__ . '/plugin/wp-cli-login-server.php',
+            $this->filePath('plugin/wp-cli-login-server.php'),
             WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE
         );
 
-        if (file_exists(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE)) {
-            WP_CLI::success('Companion plugin installed.');
+        if (! file_exists(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE)) {
+            WP_CLI::error('Plugin install failed.');
         }
+
+        $this->resetOption();
+
+        WP_CLI::success('Companion plugin installed.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'activate')) {
             $this->toggle(['on']);
