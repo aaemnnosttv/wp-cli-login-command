@@ -8,7 +8,28 @@ Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contr
 
 ## Using
 
+```
+NAME
 
+  wp login
+
+DESCRIPTION
+
+  Manage magic passwordless sign-in.
+
+SYNOPSIS
+
+  wp login <command>
+
+SUBCOMMANDS
+
+  create          Create a magic sign-in link for the given user.
+  email           Email a magic sign-in link to the given user.
+  install         Install/update the companion server plugin.
+  invalidate      Invalidate any existing magic links.
+  toggle          Toggle the active state of the companion server plugin.
+
+```
 
 ## Installing
 
@@ -45,6 +66,4 @@ Once you've decided to commit the time to seeing your pull request through, plea
 1. Create a feature branch for each contribution.
 2. Submit your pull request early for feedback.
 3. Include functional tests with your changes. [Read the WP-CLI documentation](https://wp-cli.org/docs/pull-requests/#functional-tests) for an introduction.
-4. Follow the [WordPress Coding Standards](http://make.wordpress.org/core/handbook/coding-standards/).
-
-*This README.md is generated dynamically from the project's codebase using `wp scaffold package-readme` ([doc](https://github.com/wp-cli/scaffold-package-command#wp-scaffold-package-readme)). To suggest changes, please submit a pull request against the corresponding part of the codebase.*
+4. Follow [PSR-2 Coding Standards](http://www.php-fig.org/psr/psr-2/).
