@@ -13,7 +13,7 @@ WP_CLI::add_command('login', LoginCommand::class);
 
 
 /**
- * Manage magic passwordless logins.
+ * Manage magic passwordless sign-in.
  */
 class LoginCommand
 {
@@ -33,7 +33,7 @@ class LoginCommand
     const REQUIRED_PLUGIN_VERSION = '1.0';
 
     /**
-     * Get a magic login URL for the given user.
+     * Create a magic sign-in link for the given user.
      *
      * ## OPTIONS
      *
@@ -76,7 +76,7 @@ class LoginCommand
     }
 
     /**
-     * Email a magic login link to the given user.
+     * Email a magic sign-in link to the given user.
      *
      * ## OPTIONS
      *
@@ -335,6 +335,27 @@ class LoginCommand
     private function domain()
     {
         return parse_url(home_url(), PHP_URL_HOST);
+    }
+
+    /**
+     * Get an absolute file path, from the given path relative to the package root.
+     *
+     * @param $relative
+     *
+     * @return string
+     */
+    private function filePath($relative)
+    {
+        return self::$rootDir . '/' . $relative;
+    }
+
+    /**
+     * Set the root directory for the package.
+     * @param $dir
+     */
+    public static function setRoot($dir)
+    {
+        self::$rootDir = $dir;
     }
 
     /**
