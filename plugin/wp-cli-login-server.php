@@ -183,7 +183,7 @@ class WP_CLI_Login_Server
     {
         $exception        = get_class($e);
         $exceptionMessage = $e->getMessage();
-        $common           = sprintf("Try again perhaps? or <a href='%s'>Go Home &rarr;</a>", esc_url(home_url()));
+        $common           = sprintf('Try again perhaps? or <a href="%s">Go Home &rarr;</a>', esc_url(home_url()));
         $message          = "<strong>$exceptionMessage</strong><p>$common</p>";
 
         wp_die($message, $exception);
