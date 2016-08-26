@@ -33,6 +33,12 @@ class LoginCommand
     const REQUIRED_PLUGIN_VERSION = '1.0';
 
     /**
+     * Absolute path to root directory of the package.
+     * @var
+     */
+    private static $rootDir;
+
+    /**
      * Create a magic sign-in link for the given user.
      *
      * ## OPTIONS
