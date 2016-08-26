@@ -1,7 +1,7 @@
 aaemnnosttv/wp-cli-login-command
 ================================
 
-
+Login to WordPress with secure passwordless links.
 
 [![Build Status](https://travis-ci.org/aaemnnosttv/wp-cli-login-command.svg?branch=master)](https://travis-ci.org/aaemnnosttv/wp-cli-login-command)
 
