@@ -18,9 +18,9 @@ WP_CLI::add_command('login', LoginCommand::class);
 class LoginCommand
 {
     /**
-     * Option key for the current magic login endpoint.
+     * Option key for the persisted-data.
      */
-    const ENDPOINT_OPTION = 'wp_cli_login_endpoint';
+    const OPTION = 'wp_cli_login';
 
     /**
      * Companion plugin file path, relative to plugins directory.
@@ -142,7 +142,7 @@ class LoginCommand
      */
     public function invalidate()
     {
-        update_option(static::ENDPOINT_OPTION, uniqid());
+        $this->resetOption();
 
         WP_CLI::success('Magic links invalidated.');
     }
@@ -174,9 +174,35 @@ class LoginCommand
      */
     private function endpoint()
     {
-        add_option(static::ENDPOINT_OPTION, uniqid());
+        $saved   = json_decode(get_option(static::OPTION));
+        $version = isset($saved->version) ? $saved->version : false;
 
-        return get_option(static::ENDPOINT_OPTION);
+        if (! $saved) {
+            static::debug('Creating endpoint');
+            return $this->resetOption()->endpoint;
+        } elseif (! $this->pluginMatchesVersion($version)) {
+            WP_CLI::line("Updating endpoint for compatibility with version $version.");
+            WP_CLI::warning('This will invalidate any existing magic links.');
+            return $this->resetOption()->endpoint;
+        }
+
+        return $saved->endpoint;
+    }
+
+    /**
+     * Reset the saved option with fresh data.
+     * @return \stdClass
+     */
+    private function resetOption()
+    {
+        $option = [
+            'endpoint' => $this->randomness(4),
+            'version'  => static::REQUIRED_PLUGIN_VERSION,
+        ];
+
+        update_option(static::OPTION, json_encode($option));
+
+        return (object) $option;
     }
 
     /**
@@ -261,7 +287,7 @@ class LoginCommand
             'time'    => time(),
         ];
 
-        set_transient("wp-cli-login/$public", json_encode($magic), MINUTE_IN_SECONDS * 5);
+        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 5);
 
         return home_url("$endpoint/$public");
     }
