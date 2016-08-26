@@ -1,5 +1,4 @@
-aaemnnosttv/wp-cli-login-command
-================================
+# WP-CLI Login Command
 
 Login to WordPress with secure passwordless links.
 
