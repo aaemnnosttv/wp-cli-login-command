@@ -66,8 +66,8 @@ Feature: Users can generate single-use magic links that will log them in automat
     Given a WP install
     When I run `wp user create evan evan@example.com`
     And I run `wp login install --activate`
-    And I run `wp login as evan --launch`
-    Then STDOUT should contain:
+    And I run `wp login as evan --launch --debug`
+    Then STDERR should contain:
       """
-      Success: Magic link launched!
+      [login] Attempting to launch magic login with system browser...
       """
