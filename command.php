@@ -281,7 +281,7 @@ class LoginCommand
      */
     private function makeMagicUrl(WP_User $user)
     {
-        static::debug("Generating a new magic login for User # $user->ID");
+        static::debug("Generating a new magic login for User $user->ID");
 
         $domain   = $this->domain();
         $endpoint = $this->endpoint();
@@ -381,7 +381,7 @@ class LoginCommand
 
     /**
      * Check if the given version matches the required plugin version.
-     * 
+     *
      * @param $version
      *
      * @return mixed
