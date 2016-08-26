@@ -330,7 +330,7 @@ class LoginCommand
 
         $installed = get_plugin_data(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE);
 
-        if (! version_compare($installed['Version'], static::REQUIRED_PLUGIN_VERSION, '=')) {
+        if (! $this->pluginMatchesVersion($installed['Version'])) {
             WP_CLI::error(
                 sprintf('The login command requires version %s of %s, but version %s is installed. Run `wp login install` to upgrade it.',
                     static::REQUIRED_PLUGIN_VERSION,
@@ -339,6 +339,18 @@ class LoginCommand
                 )
             );
         }
+    }
+
+    /**
+     * Check if the given version matches the required plugin version.
+     * 
+     * @param $version
+     *
+     * @return mixed
+     */
+    private function pluginMatchesVersion($version)
+    {
+        return version_compare($version, static::REQUIRED_PLUGIN_VERSION, '=');
     }
 
     /**
