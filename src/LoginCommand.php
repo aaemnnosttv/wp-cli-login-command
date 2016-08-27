@@ -222,6 +222,7 @@ class LoginCommand
 
     /**
      * Reset the saved option with fresh data.
+     *
      * @return \stdClass
      */
     private function resetOption()
@@ -435,6 +436,7 @@ class LoginCommand
 
     /**
      * Get the domain of the current site.
+     *
      * @return mixed
      */
     private function domain()
