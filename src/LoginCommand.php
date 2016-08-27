@@ -200,6 +200,8 @@ class LoginCommand
      */
     private function resetOption()
     {
+        static::debug('Resetting option...');
+
         $option = [
             'endpoint' => $this->randomness(4),
             'version'  => static::REQUIRED_PLUGIN_VERSION,
@@ -222,7 +224,7 @@ class LoginCommand
      */
     public function install($_, $assoc)
     {
-        static::debug('Installing/refreshing companion plugin.');
+        static::debug('Installing plugin.');
 
         wp_mkdir_p(WP_PLUGIN_DIR . '/' . dirname(static::PLUGIN_FILE));
 
