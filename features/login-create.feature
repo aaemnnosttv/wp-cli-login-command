@@ -1,5 +1,19 @@
 Feature: Users can generate single-use magic links that will log them in automatically for a given user.
 
+  Scenario: It requires the server plugin to be installed and active.
+    Given a WP install
+    When I try `wp login create admin`
+    Then STDERR should contain:
+      """
+      Error: This command requires the companion plugin to be installed and active.
+      """
+    When I run `wp login install --activate`
+    And I run `wp login create admin`
+    Then STDOUT should contain:
+      """
+      Success: Magic login link created!
+      """
+
   Scenario: It can generate magic login URLs using a user ID, login, or email address.
     Given a WP install
     When I run `wp login install --activate`
