@@ -278,8 +278,6 @@ class LoginCommand
             WP_CLI::error('Plugin install failed.');
         }
 
-        $this->resetOption();
-
         WP_CLI::success('Companion plugin installed.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'activate')) {
