@@ -41,8 +41,8 @@ class LoginCommand
      * [--launch]
      * : Launch the magic url immediately in your web browser.
      *
-     * @param $_
-     * @param $assoc
+     * @param array $_
+     * @param array $assoc
      *
      * @alias as
      */
@@ -84,8 +84,8 @@ class LoginCommand
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
      *
-     * @param $_
-     * @param $assoc
+     * @param array $_
+     * @param array $assoc
      */
     public function email($_, $assoc)
     {
@@ -249,6 +249,9 @@ class LoginCommand
      *
      * [--yes]
      * : Suppress confirmation to overwrite the installed plugin if it exists.
+     *
+     * @param array $_
+     * @param array $assoc
      */
     public function install($_, $assoc)
     {
@@ -294,7 +297,8 @@ class LoginCommand
      *   - on
      *   - off
      * ---
-     * @param $_
+     *
+     * @param array $_
      */
     public function toggle($_)
     {

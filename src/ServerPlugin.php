@@ -19,6 +19,8 @@ class ServerPlugin
 
     /**
      * ServerPlugin constructor.
+     *
+     * @param $file
      */
     public function __construct($file)
     {
