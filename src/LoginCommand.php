@@ -16,11 +16,6 @@ class LoginCommand
     const OPTION = 'wp_cli_login';
 
     /**
-     * Companion plugin file path, relative to plugins directory.
-     */
-    const PLUGIN_FILE = 'wp-cli-login-server/wp-cli-login-server.php';
-
-    /**
      * Required version of the wp-cli-login-server companion plugin.
      */
     const REQUIRED_PLUGIN_VERSION = '1.0';
