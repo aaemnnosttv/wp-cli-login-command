@@ -185,13 +185,44 @@ class LoginCommand
         if (! $saved) {
             static::debug('Creating endpoint');
             return $this->resetOption()->endpoint;
-        } elseif (! $this->pluginMatchesVersion($version)) {
-            WP_CLI::line("Updating endpoint for compatibility with version $version.");
-            WP_CLI::warning('This will invalidate any existing magic links.');
+        } elseif (! $this->installedPlugin()->versionSatisfies($version) && $this->promptForReset($version)) {
             return $this->resetOption()->endpoint;
         }
 
         return $saved->endpoint;
+    }
+
+    /**
+     * Prompt the user about resetting sign-ins.
+     *
+     * @param null $version
+     *
+     * @return string
+     */
+    private function promptForReset($version = null)
+    {
+        if ($version) {
+            WP_CLI::line("Version $version requires an update for compatibility with the current version of the login command.");
+            WP_CLI::line('Your site will not be able to respond to newly created magic sign-in links until updating.');
+        }
+        WP_CLI::warning('This will invalidate any existing magic links.');
+
+        return $this->confirm('Are you sure?');
+    }
+
+    /**
+     * Prompt the user for a yes/no answer.
+     *
+     * @param $question
+     *
+     * @return bool
+     */
+    private function confirm($question)
+    {
+        fwrite(STDOUT, $question . ' [Y/n] ');
+        $response = trim(fgets(STDIN));
+
+        return ('y' == strtolower($response));
     }
 
     /**
