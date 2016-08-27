@@ -226,15 +226,16 @@ class LoginCommand
     {
         static::debug('Installing plugin.');
 
-        wp_mkdir_p(WP_PLUGIN_DIR . '/' . dirname(static::PLUGIN_FILE));
+        $installed = $this->installedPlugin();
+        wp_mkdir_p(dirname($installed->fullPath()));
 
         // update / overwrite / refresh installed plugin file
         copy(
-            $this->filePath('plugin/wp-cli-login-server.php'),
-            WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE
+            $this->bundledPlugin()->fullPath(),
+            $installed->fullPath()
         );
 
-        if (! file_exists(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE)) {
+        if (! $installed->exists()) {
             WP_CLI::error('Plugin install failed.');
         }
 
@@ -357,33 +358,53 @@ class LoginCommand
      */
     private function ensurePluginRequirementsMet()
     {
-        if (! is_plugin_active(static::PLUGIN_FILE)) {
+        $plugin = $this->installedPlugin();
+
+        if (! ServerPlugin::isActive() || ! $plugin->exists()) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
         }
 
-        $installed = get_plugin_data(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE);
-
-        if (! $this->pluginMatchesVersion($installed['Version'])) {
+        if (! $plugin->versionSatisfies(self::REQUIRED_PLUGIN_VERSION)) {
             WP_CLI::error(
-                sprintf('The login command requires version %s of %s, but version %s is installed. Run `wp login install` to upgrade it.',
+                sprintf('The current version of the login command requires version %s of %s, but version %s is installed. Run `wp login install` to install it.',
                     static::REQUIRED_PLUGIN_VERSION,
-                    $installed['Name'],
-                    $installed['Version']
+                    $plugin->name(),
+                    $plugin->version()
                 )
             );
         }
     }
 
     /**
-     * Check if the given version matches the required plugin version.
+     * Get a ServerPlugin instance for the installed plugin.
      *
-     * @param $version
-     *
-     * @return mixed
+     * @return ServerPlugin
      */
-    private function pluginMatchesVersion($version)
+    private function installedPlugin()
     {
-        return version_compare($version, static::REQUIRED_PLUGIN_VERSION, '=');
+        static $plugin;
+
+        if (! $plugin) {
+            $plugin = ServerPlugin::installed();
+        }
+
+        return $plugin;
+    }
+
+    /**
+     * Get a ServerPlugin instance for the bundled plugin.
+     *
+     * @return ServerPlugin
+     */
+    private function bundledPlugin()
+    {
+        static $plugin;
+
+        if (! $plugin) {
+            $plugin = new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
+        }
+
+        return $plugin;
     }
 
     /**
