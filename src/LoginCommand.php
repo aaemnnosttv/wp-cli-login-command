@@ -294,7 +294,7 @@ class LoginCommand
         }
 
         if (! $setState) {
-            $setState = is_plugin_active(static::PLUGIN_FILE) ? 'off' : 'on';
+            $setState = ServerPlugin::isActive() ? 'off' : 'on';
         }
 
         self::debug("Toggling companion plugin: $setState");
