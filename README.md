@@ -4,7 +4,7 @@ Login to WordPress with secure passwordless links.
 
 [![Build Status](https://travis-ci.org/aaemnnosttv/wp-cli-login-command.svg?branch=master)](https://travis-ci.org/aaemnnosttv/wp-cli-login-command)
 
-Quick links: [Using](#using) | [Installing](#installing) | [Contributing](#contributing)
+Quick links: [Using](#using) | [Installation](#installation) | [Contributing](#contributing)
 
 ## Using
 
@@ -31,7 +31,71 @@ SUBCOMMANDS
 
 ```
 
-## Installing
+### `create` / `as`
+
+```
+wp login create <user> [options]
+```
+or alternatively use the alias
+```
+wp login as <user> [options]
+```
+
+Create a magic sign-in link for the given user.  Outputs the created URL with some extra information for the user regarding usage and expiration.  URLs currently expire 5 minutes after creation, or at the time of use, whichever comes first.
+
+> `<user>` can be passed as an User ID, username/login or email address. This is the same for all `login` commands which accept this as a parameter.
+
+#### `--url-only`
+
+Outputs the created sign-in URL only. Great for scripting, piping to your clipboard, or anything else you can think of.
+
+#### `--launch`
+
+Launches the sign-in link your default browser immediately after creation.  This is the fastest possible way to login.
+
+### `email`
+
+```
+wp login email <user> [options]
+```
+
+Email a magic sign-in link to the given user.  Sends a nice HTML email to the user's email address containing their freshly created magic sign-in link.  Planning to add support for both HTML and plain text emails in the future.
+
+#### `--template=<path-to-custom-template>`
+
+Optionally override the default email template with your own by providing the path to a different template file to use.
+The email template is compiled using the Mustache template engine, so you may use the `{{ magic_url }}` and `{{ domain }}` placeholders in your custom template.  The default template can be found in this repository under `template/email-default.mustache`.
+
+### `install`
+
+```
+wp login install [options]
+```
+
+Install/update the companion server plugin.  Installing the companion plugin is required before magic links will work on the host.
+The `login` command is aware of the installed version of the plugin, and will inform you if it needs to be installed, activated or upgraded.  This command will overwrite the existing installed plugin if present.
+
+#### `--activate`
+
+Optionally activate the plugin immediately after installation.
+
+### `invalidate`
+
+```
+wp login invalidate
+```
+
+Invalidate any existing magic sign-in links.  Any previously created links will most likely go to a 404 page.
+
+### `toggle`
+
+```
+wp login toggle [<on|off>]
+```
+
+Toggles the active status of the companion plugin.  Optionally pass `on` or `off` to set the activation accordingly. Without it, the status is simply inverted.
+
+## Installation
 
 Installing this package requires WP-CLI v0.23.0 or greater. Update to the latest stable release with `wp cli update`.
 
