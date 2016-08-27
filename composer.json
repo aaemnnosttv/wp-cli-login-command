@@ -27,6 +27,6 @@
         "johnpbloch/wordpress": "^4.6"
     },
     "scripts": {
-        "run-behat": "WP_CLI_BIN_DIR=$PWD vendor/bin/behat --ansi --format=progress"
+        "run-behat": "WP_CLI_BIN_DIR=$PWD/vendor/bin vendor/bin/behat --ansi --format=progress"
     }
 }
