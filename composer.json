@@ -18,7 +18,8 @@
     },
     "require": {
         "php": "^5.5 || ^7.0",
-        "paragonie/random_compat": "^2.0"
+        "paragonie/random_compat": "^2.0",
+        "composer/semver": "^1.0"
     },
     "require-dev": {
         "wp-cli/wp-cli": "^0.24.0",
