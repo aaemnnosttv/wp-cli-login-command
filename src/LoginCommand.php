@@ -244,16 +244,24 @@ class LoginCommand
      *
      * ## OPTIONS
      *
-     * Overwrites existing installed plugin, if any.
-     *
      * [--activate]
      * : Activate the plugin after installing.
+     *
+     * [--yes]
+     * : Suppress confirmation to overwrite the installed plugin if it exists.
      */
     public function install($_, $assoc)
     {
         static::debug('Installing plugin.');
 
         $installed = $this->installedPlugin();
+        $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
+
+        if ($installed->exists() && ! $suppress_prompt && ! $this->confirm('Overwrite existing plugin?')) {
+            WP_CLI::line('Install aborted by user.');
+            exit;
+        }
+
         wp_mkdir_p(dirname($installed->fullPath()));
 
         // update / overwrite / refresh installed plugin file
