@@ -341,20 +341,10 @@ class LoginCommand
     {
         static::debug("Looking up user by '$locator'");
 
-        /**
-         * WP_User does not accept a email in the constructor,
-         * however an ID or user_login works just fine.
-         * If the locator is a valid email address, use that,
-         * otherwise, fallback to the constructor.
-         */
-        if (filter_var($locator, FILTER_VALIDATE_EMAIL)) {
-            $user = get_user_by('email', $locator);
-        }
-        if (empty($user) || ! $user->exists()) {
-            $user = new WP_User($locator);
-        }
+        $fetcher = new WP_CLI\Fetchers\User();
+        $user    = $fetcher->get($locator);
 
-        if (! $user->exists()) {
+        if (! $user instanceof WP_User) {
             WP_CLI::error("No user found by: $locator");
         }
 
