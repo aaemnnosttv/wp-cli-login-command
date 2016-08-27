@@ -179,9 +179,10 @@ class LoginCommand
 
         if (! $saved) {
             static::debug('Creating endpoint');
-            return $this->resetOption()->endpoint;
+            $saved = $this->resetOption();
         } elseif (! $this->installedPlugin()->versionSatisfies($version) && $this->promptForReset($version)) {
-            return $this->resetOption()->endpoint;
+            static::debug("Updating endpoint for version $version");
+            $saved = $this->resetOption();
         }
 
         return $saved->endpoint;
