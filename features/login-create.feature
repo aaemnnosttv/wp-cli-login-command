@@ -17,6 +17,12 @@ Feature: Users can generate single-use magic links that will log them in automat
   Scenario: It can generate magic login URLs using a user ID, login, or email address.
     Given a WP install
     When I run `wp login install --activate`
+    And I run `wp login create 1`
+    Then STDOUT should contain:
+      """
+      Success: Magic login link created!
+      """
+
     And I run `wp user create john john@example.com`
     And I run `wp login as john`
     Then STDOUT should contain:
