@@ -35,6 +35,12 @@ Feature: Users can generate single-use magic links that will log them in automat
       Success: Magic login link created!
       """
 
+    When I try `wp login as nobody@nowhere.com`
+    Then STDERR should contain:
+      """
+      Error: No user found by: nobody@nowhere.com
+      """
+
   Scenario: It can output the magic link URL only if desired.
     Given a WP install
     When I run `wp login install --activate`
