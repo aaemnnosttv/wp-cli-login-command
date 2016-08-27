@@ -3,6 +3,7 @@
 namespace WP_CLI_Login;
 
 use WP_CLI;
+use WP_CLI\Process;
 use WP_User;
 
 /**
@@ -146,23 +147,30 @@ class LoginCommand
     {
         static::debug('Attempting to launch magic login with system browser...');
 
-        if (preg_match('/^darwin/i', PHP_OS)) {
-            $launch = 'open';
+        if ($cmd = getenv('WP_CLI_LOGIN_LAUNCH_WITH')) {
+            // system/environment override
+        }
+        elseif (preg_match('/^darwin/i', PHP_OS)) {
+            $cmd = 'open';
         } elseif (preg_match('/^win/i', PHP_OS)) {
-            $launch = 'start';
+            $cmd = 'start';
         } elseif (preg_match('/^linux/i', PHP_OS)) {
-            $launch = 'xdg-open';
+            $cmd = 'xdg-open';
         } else {
             WP_CLI::error('Your operating system does not seem to support launching from the command line.  Please open an issue (https://github.com/aaemnnosttv/wp-cli-login-command/issues) and be sure to include the output from this command: `php -r \'echo PHP_OS;\'`');
             exit; // make IDE happy.
         }
 
-        $process = WP_CLI\Process::create(sprintf('%s "%s"', $launch, $url));
+        static::debug("Launching browser with: $cmd");
+
+        $process = Process::create("$cmd '$url'");
         $result  = $process->run();
 
         if ($result->return_code > 0) {
             WP_CLI::error($result->stderr);
         }
+
+        self::debug($result->stdout);
 
         WP_CLI::success("Magic link launched!");
     }

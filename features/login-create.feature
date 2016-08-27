@@ -64,10 +64,17 @@ Feature: Users can generate single-use magic links that will log them in automat
 
   Scenario: It can launch the magic url for the user automatically in their browser.
     Given a WP install
-    When I run `wp user create evan evan@example.com`
     And I run `wp login install --activate`
-    And I try `wp login as evan --launch --debug`
+    And I run `WP_CLI_LOGIN_LAUNCH_WITH=echo wp login as admin --launch --debug`
     Then STDERR should contain:
       """
-      [login] Attempting to launch magic login with system browser...
+      [login] Launching browser with: echo
+      """
+    Then STDERR should contain:
+      """
+      [login] http://localhost:8888/
+      """
+    And STDOUT should contain:
+      """
+      Magic link launched!
       """
