@@ -6,7 +6,7 @@ if (! class_exists('WP_CLI')) {
     return;
 }
 
-LoginCommand::setRoot(__DIR__);
+LoginCommand::setPackage(new Package(__DIR__));
 
 \WP_CLI::add_command('login', LoginCommand::class);
 

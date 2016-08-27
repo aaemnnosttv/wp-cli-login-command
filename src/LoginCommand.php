@@ -26,10 +26,10 @@ class LoginCommand
     const REQUIRED_PLUGIN_VERSION = '1.0';
 
     /**
-     * Absolute path to root directory of the package.
-     * @var
+     * Package instance
+     * @var Package
      */
-    private static $rootDir;
+    private static $package;
 
     /**
      * Create a magic sign-in link for the given user.
@@ -412,18 +412,19 @@ class LoginCommand
      *
      * @return string
      */
-    private function filePath($relative)
+    private function packagePath($relative)
     {
-        return self::$rootDir . '/' . $relative;
+        return self::$package->fullPath($relative);
     }
 
     /**
-     * Set the root directory for the package.
-     * @param $dir
+     * Set the package instance.
+     *
+     * @param Package $package
      */
-    public static function setRoot($dir)
+    public static function setPackage(Package $package)
     {
-        self::$rootDir = $dir;
+        self::$package = $package;
     }
 
     /**
