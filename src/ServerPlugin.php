@@ -48,6 +48,19 @@ class ServerPlugin
     }
 
     /**
+     * Try to see if the plugin was installed with Composer or not.
+     *
+     * Checks if there is a composer.json adjacent to the main plugin file.
+     * This file will not exist when installed by the command.
+     *
+     * @return bool
+     */
+    public function isComposerInstalled()
+    {
+        return file_exists(dirname($this->file) . '/composer.json');
+    }
+
+    /**
      * Check if the main plugin file exists.
      *
      * @return bool
