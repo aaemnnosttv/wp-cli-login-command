@@ -17,9 +17,9 @@ class LoginCommand
     const OPTION = 'wp_cli_login';
 
     /**
-     * Required version of the wp-cli-login-server companion plugin.
+     * Required version constraint of the wp-cli-login-server companion plugin.
      */
-    const REQUIRED_PLUGIN_VERSION = '1.0';
+    const REQUIRED_PLUGIN_VERSION = '^1.0';
 
     /**
      * Package instance
