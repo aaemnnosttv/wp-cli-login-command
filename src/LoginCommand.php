@@ -269,13 +269,9 @@ class LoginCommand
         $installed = $this->installedPlugin();
         $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
 
-        if ($installed->exists() && ! $suppress_prompt && ! $this->confirm('Overwrite existing plugin?')) {
-            if ($installed->isComposerInstalled() && $this->confirm('This plugin appears to be installed by Composer. Overwrite anyway?')) {
-                WP_CLI::line('Updating installed plugin.');
-            } else {
-                WP_CLI::line('Update aborted by user.');
-                exit;
-            }
+        if ($installed->exists() && ! $suppress_prompt && ! $this->confirmOverwrite($installed)) {
+            WP_CLI::line('Update aborted by user.');
+            exit;
         }
 
         wp_mkdir_p(dirname($installed->fullPath()));
@@ -295,6 +291,20 @@ class LoginCommand
         if (WP_CLI\Utils\get_flag_value($assoc, 'activate')) {
             $this->toggle(['on']);
         }
+    }
+
+    /**
+     * Confirm the overwrite of the given server plugin with the user.
+     *
+     * @param ServerPlugin $plugin
+     *
+     * @return bool
+     */
+    private function confirmOverwrite(ServerPlugin $plugin)
+    {
+        return $plugin->isComposerInstalled()
+            ? $this->confirm('This plugin appears to be installed by Composer. Overwrite anyway?')
+            : $this->confirm('Overwrite existing plugin?');
     }
 
     /**
