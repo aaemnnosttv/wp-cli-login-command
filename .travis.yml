@@ -22,3 +22,13 @@ notifications:
   email:
     on_success: never
     on_failure: change
+
+before_deploy:
+  - openssl aes-256-cbc -K $encrypted_70f7c684b483_key -iv $encrypted_70f7c684b483_iv -in deploy/key.enc -out deploy/key -d
+
+deploy:
+  provider: script
+  script: bash deploy/deploy-plugin.sh
+  on:
+    all_branches: true
+    php: 7.0

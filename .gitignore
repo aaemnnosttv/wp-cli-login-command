@@ -5,3 +5,6 @@ node_modules/
 vendor/
 wordpress/
 /.subsplit
+/deploy
+!/deploy/*.sh
+!/deploy/*.enc
