@@ -6,7 +6,7 @@ ssh-add deploy/key
 # Install git-subsplit
 (
     cd /tmp
-    git clone git@github.com:dflydev/git-subsplit.git
+    git clone https://github.com/dflydev/git-subsplit.git
     bash git-subsplit/install.sh
 )
 # Prepare for doing the subsplits
