@@ -270,8 +270,12 @@ class LoginCommand
         $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
 
         if ($installed->exists() && ! $suppress_prompt && ! $this->confirm('Overwrite existing plugin?')) {
-            WP_CLI::line('Install aborted by user.');
-            exit;
+            if ($installed->isComposerInstalled() && $this->confirm('This plugin appears to be installed by Composer. Overwrite anyway?')) {
+                WP_CLI::line('Updating installed plugin.');
+            } else {
+                WP_CLI::line('Update aborted by user.');
+                exit;
+            }
         }
 
         wp_mkdir_p(dirname($installed->fullPath()));
