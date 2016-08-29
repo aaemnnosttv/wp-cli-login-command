@@ -73,11 +73,18 @@ wp login install [options]
 ```
 
 Install/update the companion server plugin.  Installing the companion plugin is required before magic links will work on the host.
-The `login` command is aware of the installed version of the plugin, and will inform you if it needs to be installed, activated or upgraded.  This command will overwrite the existing installed plugin if present.
+The `login` command is aware of the installed version of the plugin, and will inform you if it needs to be installed, activated or upgraded.
+If the plugin is already installed, you will be prompted to overwrite it.
 
 #### `--activate`
 
 Optionally activate the plugin immediately after installation.
+
+#### `--yes`
+
+Suppress prompting for confirmation to overwrite the existing plugin.
+
+> Using a Composer-based WordPress install? You can require the companion plugin using the package `aaemnnosttv/wp-cli-login-server`.
 
 ### `invalidate`
 
