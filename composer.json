@@ -18,7 +18,8 @@
     },
     "require": {
         "php": "^5.5 || ^7.0",
-        "paragonie/random_compat": "^2.0"
+        "paragonie/random_compat": "^2.0",
+        "composer/semver": "^1.0"
     },
     "require-dev": {
         "wp-cli/wp-cli": "^0.24.0",
@@ -26,6 +27,6 @@
         "johnpbloch/wordpress": "^4.6"
     },
     "scripts": {
-        "run-behat": "WP_CLI_BIN_DIR=$PWD vendor/bin/behat --ansi --format=progress"
+        "run-behat": "WP_CLI_BIN_DIR=$PWD/vendor/bin vendor/bin/behat --ansi --format=progress"
     }
 }

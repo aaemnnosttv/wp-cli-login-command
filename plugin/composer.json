@@ -1,0 +1,16 @@
+{
+    "name": "aaemnnosttv/wp-cli-login-server",
+    "description": "Companion plugin to the WP-CLI Login Command to handle magic passwordless sign-in requests.",
+    "type": "wordpress-plugin",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Evan Mattson",
+            "email": "me@aaemnnost.tv",
+            "homepage": "https://aaemnnost.tv"
+        }
+    ],
+    "require": {
+        "composer/installers": "^1.0"
+    }
+}

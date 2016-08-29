@@ -1,8 +1,28 @@
 Feature: Users can generate single-use magic links that will log them in automatically for a given user.
 
+  Scenario: It requires the server plugin to be installed and active.
+    Given a WP install
+    When I try `wp login create admin`
+    Then STDERR should contain:
+      """
+      Error: This command requires the companion plugin to be installed and active.
+      """
+    When I run `wp login install --activate`
+    And I run `wp login create admin`
+    Then STDOUT should contain:
+      """
+      Success: Magic login link created!
+      """
+
   Scenario: It can generate magic login URLs using a user ID, login, or email address.
     Given a WP install
     When I run `wp login install --activate`
+    And I run `wp login create 1`
+    Then STDOUT should contain:
+      """
+      Success: Magic login link created!
+      """
+
     And I run `wp user create john john@example.com`
     And I run `wp login as john`
     Then STDOUT should contain:
@@ -13,6 +33,12 @@ Feature: Users can generate single-use magic links that will log them in automat
     Then STDOUT should contain:
       """
       Success: Magic login link created!
+      """
+
+    When I try `wp login as nobody@nowhere.com`
+    Then STDERR should contain:
+      """
+      Error: No user found by: nobody@nowhere.com
       """
 
   Scenario: It can output the magic link URL only if desired.
@@ -64,10 +90,17 @@ Feature: Users can generate single-use magic links that will log them in automat
 
   Scenario: It can launch the magic url for the user automatically in their browser.
     Given a WP install
-    When I run `wp user create evan evan@example.com`
     And I run `wp login install --activate`
-    And I try `wp login as evan --launch --debug`
+    And I run `WP_CLI_LOGIN_LAUNCH_WITH=echo wp login as admin --launch --debug`
     Then STDERR should contain:
       """
-      [login] Attempting to launch magic login with system browser...
+      [login] Launching browser with: echo
+      """
+    Then STDERR should contain:
+      """
+      [login] http://localhost:8888/
+      """
+    And STDOUT should contain:
+      """
+      Magic link launched!
       """

@@ -3,6 +3,7 @@
 namespace WP_CLI_Login;
 
 use WP_CLI;
+use WP_CLI\Process;
 use WP_User;
 
 /**
@@ -16,20 +17,15 @@ class LoginCommand
     const OPTION = 'wp_cli_login';
 
     /**
-     * Companion plugin file path, relative to plugins directory.
-     */
-    const PLUGIN_FILE = 'wp-cli-login-server/wp-cli-login-server.php';
-
-    /**
      * Required version of the wp-cli-login-server companion plugin.
      */
     const REQUIRED_PLUGIN_VERSION = '1.0';
 
     /**
-     * Absolute path to root directory of the package.
-     * @var
+     * Package instance
+     * @var Package
      */
-    private static $rootDir;
+    private static $package;
 
     /**
      * Create a magic sign-in link for the given user.
@@ -46,8 +42,8 @@ class LoginCommand
      * [--launch]
      * : Launch the magic url immediately in your web browser.
      *
-     * @param $_
-     * @param $assoc
+     * @param array $_
+     * @param array $assoc
      *
      * @alias as
      */
@@ -66,7 +62,9 @@ class LoginCommand
         }
 
         WP_CLI::success('Magic login link created!');
+        WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
+        WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line('This link will self-destruct in 5 minutes, or as soon as it is used; whichever comes first.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
@@ -87,15 +85,15 @@ class LoginCommand
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
      *
-     * @param $_
-     * @param $assoc
+     * @param array $_
+     * @param array $assoc
      */
     public function email($_, $assoc)
     {
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', $this->filePath('template/email-default.mustache'));
+        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', $this->packagePath('template/email-default.mustache'));
         $html_rendered = $this->renderEmailTemplate($template_file, $user);
         $domain        = $this->domain();
         $headers       = [
@@ -149,23 +147,30 @@ class LoginCommand
     {
         static::debug('Attempting to launch magic login with system browser...');
 
-        if (preg_match('/^darwin/i', PHP_OS)) {
-            $launch = 'open';
+        if ($cmd = getenv('WP_CLI_LOGIN_LAUNCH_WITH')) {
+            // system/environment override
+        }
+        elseif (preg_match('/^darwin/i', PHP_OS)) {
+            $cmd = 'open';
         } elseif (preg_match('/^win/i', PHP_OS)) {
-            $launch = 'start';
+            $cmd = 'start';
         } elseif (preg_match('/^linux/i', PHP_OS)) {
-            $launch = 'xdg-open';
+            $cmd = 'xdg-open';
         } else {
             WP_CLI::error('Your operating system does not seem to support launching from the command line.  Please open an issue (https://github.com/aaemnnosttv/wp-cli-login-command/issues) and be sure to include the output from this command: `php -r \'echo PHP_OS;\'`');
             exit; // make IDE happy.
         }
 
-        $process = WP_CLI\Process::create(sprintf('%s "%s"', $launch, $url));
+        static::debug("Launching browser with: $cmd");
+
+        $process = Process::create("$cmd '$url'");
         $result  = $process->run();
 
         if ($result->return_code > 0) {
             WP_CLI::error($result->stderr);
         }
+
+        self::debug($result->stdout);
 
         WP_CLI::success("Magic link launched!");
     }
@@ -182,22 +187,57 @@ class LoginCommand
 
         if (! $saved) {
             static::debug('Creating endpoint');
-            return $this->resetOption()->endpoint;
-        } elseif (! $this->pluginMatchesVersion($version)) {
-            WP_CLI::line("Updating endpoint for compatibility with version $version.");
-            WP_CLI::warning('This will invalidate any existing magic links.');
-            return $this->resetOption()->endpoint;
+            $saved = $this->resetOption();
+        } elseif (! $this->installedPlugin()->versionSatisfies($version) && $this->promptForReset($version)) {
+            static::debug("Updating endpoint for version $version");
+            $saved = $this->resetOption();
         }
 
         return $saved->endpoint;
     }
 
     /**
+     * Prompt the user about resetting sign-ins.
+     *
+     * @param null $version
+     *
+     * @return string
+     */
+    private function promptForReset($version = null)
+    {
+        if ($version) {
+            WP_CLI::line("Version $version requires an update for compatibility with the current version of the login command.");
+            WP_CLI::line('Your site will not be able to respond to newly created magic sign-in links until updating.');
+        }
+        WP_CLI::warning('This will invalidate any existing magic links.');
+
+        return $this->confirm('Are you sure?');
+    }
+
+    /**
+     * Prompt the user for a yes/no answer.
+     *
+     * @param $question
+     *
+     * @return bool
+     */
+    private function confirm($question)
+    {
+        fwrite(STDOUT, $question . ' [Y/n] ');
+        $response = trim(fgets(STDIN));
+
+        return ('y' == strtolower($response));
+    }
+
+    /**
      * Reset the saved option with fresh data.
+     *
      * @return \stdClass
      */
     private function resetOption()
     {
+        static::debug('Resetting option...');
+
         $option = [
             'endpoint' => $this->randomness(4),
             'version'  => static::REQUIRED_PLUGIN_VERSION,
@@ -213,34 +253,58 @@ class LoginCommand
      *
      * ## OPTIONS
      *
-     * Overwrites existing installed plugin, if any.
-     *
      * [--activate]
      * : Activate the plugin after installing.
+     *
+     * [--yes]
+     * : Suppress confirmation to overwrite the installed plugin if it exists.
+     *
+     * @param array $_
+     * @param array $assoc
      */
     public function install($_, $assoc)
     {
-        static::debug('Installing/refreshing companion plugin.');
+        static::debug('Installing plugin.');
 
-        wp_mkdir_p(WP_PLUGIN_DIR . '/' . dirname(static::PLUGIN_FILE));
+        $installed = $this->installedPlugin();
+        $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
+
+        if ($installed->exists() && ! $suppress_prompt && ! $this->confirmOverwrite($installed)) {
+            WP_CLI::line('Update aborted by user.');
+            exit;
+        }
+
+        wp_mkdir_p(dirname($installed->fullPath()));
 
         // update / overwrite / refresh installed plugin file
         copy(
-            $this->filePath('plugin/wp-cli-login-server.php'),
-            WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE
+            $this->bundledPlugin()->fullPath(),
+            $installed->fullPath()
         );
 
-        if (! file_exists(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE)) {
+        if (! $installed->exists()) {
             WP_CLI::error('Plugin install failed.');
         }
-
-        $this->resetOption();
 
         WP_CLI::success('Companion plugin installed.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'activate')) {
             $this->toggle(['on']);
         }
+    }
+
+    /**
+     * Confirm the overwrite of the given server plugin with the user.
+     *
+     * @param ServerPlugin $plugin
+     *
+     * @return bool
+     */
+    private function confirmOverwrite(ServerPlugin $plugin)
+    {
+        return $plugin->isComposerInstalled()
+            ? $this->confirm('This plugin appears to be installed by Composer. Overwrite anyway?')
+            : $this->confirm('Overwrite existing plugin?');
     }
 
     /**
@@ -254,7 +318,8 @@ class LoginCommand
      *   - on
      *   - off
      * ---
-     * @param $_
+     *
+     * @param array $_
      */
     public function toggle($_)
     {
@@ -263,7 +328,7 @@ class LoginCommand
         }
 
         if (! $setState) {
-            $setState = is_plugin_active(static::PLUGIN_FILE) ? 'off' : 'on';
+            $setState = ServerPlugin::isActive() ? 'off' : 'on';
         }
 
         self::debug("Toggling companion plugin: $setState");
@@ -337,20 +402,10 @@ class LoginCommand
     {
         static::debug("Looking up user by '$locator'");
 
-        /**
-         * WP_User does not accept a email in the constructor,
-         * however an ID or user_login works just fine.
-         * If the locator is a valid email address, use that,
-         * otherwise, fallback to the constructor.
-         */
-        if (filter_var($locator, FILTER_VALIDATE_EMAIL)) {
-            $user = get_user_by('email', $locator);
-        }
-        if (empty($user) || ! $user->exists()) {
-            $user = new WP_User($locator);
-        }
+        $fetcher = new WP_CLI\Fetchers\User();
+        $user    = $fetcher->get($locator);
 
-        if (! $user->exists()) {
+        if (! $user instanceof WP_User) {
             WP_CLI::error("No user found by: $locator");
         }
 
@@ -363,37 +418,58 @@ class LoginCommand
      */
     private function ensurePluginRequirementsMet()
     {
-        if (! is_plugin_active(static::PLUGIN_FILE)) {
+        $plugin = $this->installedPlugin();
+
+        if (! ServerPlugin::isActive() || ! $plugin->exists()) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
         }
 
-        $installed = get_plugin_data(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE);
-
-        if (! $this->pluginMatchesVersion($installed['Version'])) {
+        if (! $plugin->versionSatisfies(self::REQUIRED_PLUGIN_VERSION)) {
             WP_CLI::error(
-                sprintf('The login command requires version %s of %s, but version %s is installed. Run `wp login install` to upgrade it.',
+                sprintf('The current version of the login command requires version %s of %s, but version %s is installed. Run `wp login install` to install it.',
                     static::REQUIRED_PLUGIN_VERSION,
-                    $installed['Name'],
-                    $installed['Version']
+                    $plugin->name(),
+                    $plugin->version()
                 )
             );
         }
     }
 
     /**
-     * Check if the given version matches the required plugin version.
+     * Get a ServerPlugin instance for the installed plugin.
      *
-     * @param $version
-     *
-     * @return mixed
+     * @return ServerPlugin
      */
-    private function pluginMatchesVersion($version)
+    private function installedPlugin()
     {
-        return version_compare($version, static::REQUIRED_PLUGIN_VERSION, '=');
+        static $plugin;
+
+        if (! $plugin) {
+            $plugin = ServerPlugin::installed();
+        }
+
+        return $plugin;
+    }
+
+    /**
+     * Get a ServerPlugin instance for the bundled plugin.
+     *
+     * @return ServerPlugin
+     */
+    private function bundledPlugin()
+    {
+        static $plugin;
+
+        if (! $plugin) {
+            $plugin = new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
+        }
+
+        return $plugin;
     }
 
     /**
      * Get the domain of the current site.
+     *
      * @return mixed
      */
     private function domain()
@@ -408,18 +484,19 @@ class LoginCommand
      *
      * @return string
      */
-    private function filePath($relative)
+    private function packagePath($relative)
     {
-        return self::$rootDir . '/' . $relative;
+        return self::$package->fullPath($relative);
     }
 
     /**
-     * Set the root directory for the package.
-     * @param $dir
+     * Set the package instance.
+     *
+     * @param Package $package
      */
-    public static function setRoot($dir)
+    public static function setPackage(Package $package)
     {
-        self::$rootDir = $dir;
+        self::$package = $package;
     }
 
     /**
