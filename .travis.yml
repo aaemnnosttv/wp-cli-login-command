@@ -29,6 +29,7 @@ before_deploy:
 deploy:
   provider: script
   script: bash deploy/deploy-plugin.sh
+  skip_cleanup: true
   on:
     all_branches: true
     php: 7.0
