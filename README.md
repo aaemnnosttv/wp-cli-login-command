@@ -3,6 +3,7 @@
 Login to WordPress with secure passwordless links.
 
 [![Build Status](https://travis-ci.org/aaemnnosttv/wp-cli-login-command.svg?branch=master)](https://travis-ci.org/aaemnnosttv/wp-cli-login-command)
+[![Packagist](https://img.shields.io/packagist/v/aaemnnosttv/wp-cli-login-command.svg)](https://packagist.org/packages/aaemnnosttv/wp-cli-login-command)
 
 Quick links: [Using](#using) | [Installation](#installation) | [Contributing](#contributing)
 
