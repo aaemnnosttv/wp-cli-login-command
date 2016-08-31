@@ -8,4 +8,4 @@ wget https://github.com/dflydev/git-subsplit/raw/d77ec9d3e1addd97dca1464eabf95c5
 # Prepare for doing the subsplits
 bash git-subsplit.sh init git@github.com:aaemnnosttv/wp-cli-login-command.git
 # synchronize the plugin directory with its respective repository for the current branch
-bash git-subsplit.sh publish --heads="$TRAVIS_BRANCH" plugin/:git@github.com:aaemnnosttv/wp-cli-login-server.git
+bash git-subsplit.sh publish --no-tags --heads="$TRAVIS_BRANCH" plugin/:git@github.com:aaemnnosttv/wp-cli-login-server.git
