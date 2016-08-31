@@ -65,7 +65,7 @@ class LoginCommand
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
-        WP_CLI::line('This link will self-destruct in 5 minutes, or as soon as it is used; whichever comes first.');
+        WP_CLI::line('This link will self-destruct in 15 minutes, or as soon as it is used; whichever comes first.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
             $this->launch($magic_url);
@@ -359,7 +359,7 @@ class LoginCommand
             'time'    => time(),
         ];
 
-        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 5);
+        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 15);
 
         return home_url("$endpoint/$public");
     }
