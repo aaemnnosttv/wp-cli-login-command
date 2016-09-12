@@ -94,11 +94,11 @@ Feature: Users can generate single-use magic links that will log them in automat
     And I run `WP_CLI_LOGIN_LAUNCH_WITH=echo wp login as admin --launch --debug`
     Then STDERR should contain:
       """
-      [login] Launching browser with: echo
+      Debug (aaemnnosttv/wp-cli-login-command): Launching browser with: echo
       """
     Then STDERR should contain:
       """
-      [login] http://localhost:8888/
+      Debug (aaemnnosttv/wp-cli-login-command): http://localhost:8888/
       """
     And STDOUT should contain:
       """

@@ -11,5 +11,5 @@ Feature: Magic sign-in links can be emailed to the user.
       """
     And STDERR should contain:
       """
-      [login] Sending email to john@example.dev
+      Debug (aaemnnosttv/wp-cli-login-command): Sending email to john@example.dev
       """

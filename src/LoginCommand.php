@@ -506,6 +506,6 @@ class LoginCommand
      */
     private static function debug($message)
     {
-        WP_CLI::debug("[login] $message");
+        WP_CLI::debug($message, 'aaemnnosttv/wp-cli-login-command');
     }
 }
