@@ -7,7 +7,7 @@ use WP_CLI\Process;
 use WP_User;
 
 /**
- * Manage magic passwordless sign-in.
+ * Manage magic passwordless log-in.
  */
 class LoginCommand
 {
@@ -28,7 +28,7 @@ class LoginCommand
     private static $package;
 
     /**
-     * Create a magic sign-in link for the given user.
+     * Create a magic log-in link for the given user.
      *
      * ## OPTIONS
      *
@@ -73,7 +73,7 @@ class LoginCommand
     }
 
     /**
-     * Email a magic sign-in link to the given user.
+     * Email a magic log-in link to the given user.
      *
      * ## OPTIONS
      *
@@ -103,7 +103,7 @@ class LoginCommand
 
         static::debug("Sending email to $user->user_email");
 
-        if (! wp_mail($user->user_email, "Magic sign-in link for $domain", $html_rendered, $headers)) {
+        if (! wp_mail($user->user_email, "Magic log-in link for $domain", $html_rendered, $headers)) {
             WP_CLI::error('Email failed to send.');
         }
 
@@ -197,7 +197,7 @@ class LoginCommand
     }
 
     /**
-     * Prompt the user about resetting sign-ins.
+     * Prompt the user about resetting log-ins.
      *
      * @param null $version
      *
@@ -207,7 +207,7 @@ class LoginCommand
     {
         if ($version) {
             WP_CLI::line("Version $version requires an update for compatibility with the current version of the login command.");
-            WP_CLI::line('Your site will not be able to respond to newly created magic sign-in links until updating.');
+            WP_CLI::line('Your site will not be able to respond to newly created magic log-in links until updating.');
         }
         WP_CLI::warning('This will invalidate any existing magic links.');
 
