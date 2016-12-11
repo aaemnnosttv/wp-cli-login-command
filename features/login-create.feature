@@ -88,6 +88,40 @@ Feature: Users can generate single-use magic links that will log them in automat
       500 Internal Server Error
       """
 
+  @issue-7
+  Scenario: It works for subdirectory installs too.
+    Given a WP install in 'subdir'
+    And a running web server
+    When I run `wp user create evan evan@example.com --path=subdir`
+    And I run `wp login install --activate --path=subdir`
+    And I run `echo $(wp login as evan --url-only --path=subdir) > magic_link`
+    And I run `ITERATION=1 curl -I -X GET --location $(cat magic_link)`
+    Then STDOUT should contain:
+      """
+      302 Found
+      """
+    Then STDOUT should contain:
+      """
+      200 OK
+      """
+    And STDOUT should contain:
+      """
+      Set-Cookie: wordpress_logged_in_
+      """
+    And STDOUT should contain:
+      """
+      Set-Cookie: wordpressuser_
+      """
+    And STDOUT should contain:
+      """
+      Set-Cookie: wordpresspass_
+      """
+    And I run `ITERATION=2 curl -I -X GET --location $(cat magic_link)`
+    Then STDOUT should contain:
+      """
+      500 Internal Server Error
+      """
+
   Scenario: It can launch the magic url for the user automatically in their browser.
     Given a WP install
     And I run `wp login install --activate`
