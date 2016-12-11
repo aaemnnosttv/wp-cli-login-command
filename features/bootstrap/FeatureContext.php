@@ -316,7 +316,7 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 		$this->create_config( $subdir );
 
 		$install_args = array(
-			'url' => 'http://localhost:8888',
+			'url' => "http://localhost:8888/$subdir",
 			'title' => 'WP CLI Site',
 			'admin_user' => 'admin',
 			'admin_email' => 'admin@example.com',
