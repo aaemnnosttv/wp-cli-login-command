@@ -16,32 +16,32 @@ use WP_User;
 use Exception;
 
 /**
- * Rule out the easy non-requests.
+ * Fire up the server
  */
-if (defined('WP_CLI')                                   // ignore cli requests
-    || defined('DOING_AJAX')                            // ignore ajax requests
-    || is_admin()                                       // ignore admin requests
-    || count($_GET)                                     // if there is any query string
-    || 'GET' != strtoupper($_SERVER['REQUEST_METHOD'])  // GET requests only
-) {
-    return;
+function init_server_from_request()
+{
+    list($endpoint, $public) = WP_CLI_Login_Server::parseUri(@$_SERVER['REQUEST_URI']);
+    WP_CLI_Login_Server::handle($endpoint, $public);
+}
+if (is_eligible_request()) {
+    add_action('plugins_loaded', __NAMESPACE__ . '\\init_server_from_request');
 }
 
 /**
- * Fire up the server
+ * @return bool
  */
-add_action('plugins_loaded', function () {
-    $request = trim($_SERVER['REQUEST_URI'], '/');
-    $fragments = explode('/', $request);
-
-    if (2 !== count($fragments)) {
-        return;
-    }
-
-    list($endpoint, $public) = $fragments;
-
-    WP_CLI_Login_Server::handle($endpoint, $public);
-});
+function is_eligible_request()
+{
+    return ! (
+        (defined('WP_CLI') && WP_CLI)                       // ignore cli requests
+        || (defined('DOING_AJAX') && DOING_AJAX)            // ignore ajax requests
+        || (defined('DOING_CRON') && DOING_CRON)            // ignore cron requests
+        || (defined('WP_INSTALLING') && WP_INSTALLING)      // WP ain't ready
+        || 'GET' != strtoupper(@$_SERVER['REQUEST_METHOD']) // GET requests only
+        || count($_GET) > 0                                 // if there is any query string
+        || is_admin()                                       // ignore admin requests
+    );
+}
 
 
 
@@ -73,6 +73,21 @@ class WP_CLI_Login_Server
     {
         $this->endpoint = $endpoint;
         $this->publicKey = $publicKey;
+    }
+
+    /**
+     * Parse the endpoint & key from the URI, if any.
+     *
+     * @param $uri string  Request URI
+     *
+     * @return array [endpoint, key]
+     */
+    public static function parseUri($uri)
+    {
+        return array_slice(
+            array_merge(['',''], explode('/', $uri)),
+            -2
+        );
     }
 
     /**
