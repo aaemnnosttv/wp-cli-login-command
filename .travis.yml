@@ -32,5 +32,5 @@ deploy:
   script: bash deploy/deploy-plugin.sh
   skip_cleanup: true
   on:
-    all_branches: true
+    tags: true
     php: 7.0
