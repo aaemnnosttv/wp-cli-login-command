@@ -19,7 +19,7 @@ class LoginCommand
     /**
      * Required version constraint of the wp-cli-login-server companion plugin.
      */
-    const REQUIRED_PLUGIN_VERSION = '^1.0';
+    const REQUIRED_PLUGIN_VERSION = '^1.1';
 
     /**
      * Package instance
