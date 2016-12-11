@@ -16,6 +16,9 @@
         },
         "files": [ "command.php" ]
     },
+    "autoload-dev": {
+        "classmap": ["plugin"]
+    },
     "require": {
         "php": "^5.5 || ^7.0",
         "paragonie/random_compat": "^2.0",
@@ -24,7 +27,8 @@
     "require-dev": {
         "wp-cli/wp-cli": "^0.24.0",
         "behat/behat": "~2.5",
-        "johnpbloch/wordpress": "^4.6"
+        "johnpbloch/wordpress": "^4.6",
+        "phpunit/phpunit": "^4.8"
     },
     "scripts": {
         "run-behat": "WP_CLI_BIN_DIR=$PWD/vendor/bin vendor/bin/behat --ansi --format=progress"
