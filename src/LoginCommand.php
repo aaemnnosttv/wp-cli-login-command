@@ -339,6 +339,25 @@ class LoginCommand
     }
 
     /**
+     * Magic link timeout
+     *
+     * @param  WP_User $user User to create login URL for
+     *
+     * @return string  URL
+     */
+    private function get_env_timeout()
+    {
+        /**
+         * Link timeout default variable
+         */
+        $link_timeout_duration = getenv('WP_CLI_LOGIN_TIMEOUT_DURATION') ? getenv('WP_CLI_LOGIN_TIMEOUT_DURATION') : '15';
+        if (is_numeric($link_timeout_duration))
+            return $link_timeout_duration;
+        else
+            return $link_timeout_duration;
+    }
+
+    /**
      * Create a magic login URL
      *
      * @param  WP_User $user User to create login URL for
@@ -359,7 +378,7 @@ class LoginCommand
             'time'    => time(),
         ];
 
-        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 15);
+        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * $this->get_env_timeout());
 
         return home_url("$endpoint/$public");
     }
