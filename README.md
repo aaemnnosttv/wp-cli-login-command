@@ -46,6 +46,10 @@ Create a magic sign-in link for the given user.  Outputs the created URL with so
 
 > `<user>` can be passed as an User ID, username/login or email address. This is the same for all `login` commands which accept this as a parameter.
 
+### `Magic link timeout`
+
+By default the expiration timeout for the link is set to *15 minutes*, but that can be overriden by setting the `WP_CLI_LOGIN_TIMEOUT_DURATION` environment variable (`~/.bashrc`, `~/.zshrc`, `~/.profile`) in ***minutes***.
+
 #### `--url-only`
 
 Outputs the created sign-in URL only. Great for scripting, piping to your clipboard, or anything else you can think of.

@@ -65,7 +65,7 @@ class LoginCommand
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
-        WP_CLI::line('This link will self-destruct in 15 minutes, or as soon as it is used; whichever comes first.');
+        WP_CLI::line('This link will self-destruct in '. $this->get_env_timeout() .' minutes, or as soon as it is used; whichever comes first.');
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
             $this->launch($magic_url);
@@ -124,8 +124,9 @@ class LoginCommand
 
         $magic_url = $this->makeMagicUrl($user);
         $domain  = $this->domain();
+        $link_timeout = $this->get_env_timeout();
 
-        return \WP_CLI\Utils\mustache_render($template_file, compact('magic_url','domain'));
+        return \WP_CLI\Utils\mustache_render($template_file, compact('magic_url','domain','link_timeout'));
     }
 
     /**
