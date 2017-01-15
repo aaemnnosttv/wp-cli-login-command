@@ -103,14 +103,8 @@ class LoginCommand
             compact('magic_url','domain'),
             $assoc['template']
         );
-        $headers       = [
-            'Content-Type: text/html',
-            "From: WordPress <no-reply@{$domain}>",
-        ];
 
-        static::debug("Sending email to $user->user_email");
-
-        if (! wp_mail($user->user_email, "Magic log-in link for $domain", $html_rendered, $headers)) {
+        if (! $this->sendEmail($user, $domain, $html_rendered)) {
             WP_CLI::error('Email failed to send.');
         }
 
@@ -480,5 +474,28 @@ class LoginCommand
     private static function debug($message)
     {
         WP_CLI::debug($message, 'aaemnnosttv/wp-cli-login-command');
+    }
+
+    /**
+     * Send an email to the given user.
+     *
+     * @param $user
+     * @param $domain
+     * @param $html_rendered
+     *
+     * @return bool|void
+     */
+    private function sendEmail($user, $domain, $html_rendered)
+    {
+        static::debug("Sending email to $user->user_email");
+
+        return wp_mail($user->user_email,
+            "Magic log-in link for $domain",
+            $html_rendered,
+            [
+                'Content-Type: text/html',
+                "From: WordPress <no-reply@{$domain}>",
+            ]
+        );
     }
 }
