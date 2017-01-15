@@ -331,5 +331,10 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 	public function create_user($username, $email) {
         $this->proc("wp user create '$username' '$email'", ['path' => $this->variables['WP_DIR']])->run_check();
     }
+
+    public function install_login_server_plugin($activate) {
+	    $activate = $activate ? '--activate' : '';
+        $this->proc("wp login install --yes $activate", ['path' => $this->variables['WP_DIR']])->run_check();
+    }
 }
 
