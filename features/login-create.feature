@@ -86,7 +86,7 @@ Feature: Users can generate single-use magic links that will log them in automat
     And I run `ITERATION=2 curl -I -X GET --location $(cat magic_link)`
     Then STDOUT should contain:
       """
-      500 Internal Server Error
+      410 Gone
       """
 
   @issue-7
@@ -120,7 +120,7 @@ Feature: Users can generate single-use magic links that will log them in automat
     And I run `ITERATION=2 curl -I -X GET --location $(cat magic_link)`
     Then STDOUT should contain:
       """
-      500 Internal Server Error
+      410 Gone
       """
 
   Scenario: It can launch the magic url for the user automatically in their browser.
