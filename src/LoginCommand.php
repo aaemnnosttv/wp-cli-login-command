@@ -11,6 +11,8 @@ use WP_User;
  */
 class LoginCommand
 {
+    use Randomness;
+
     /**
      * Option key for the persisted-data.
      */
@@ -376,19 +378,6 @@ class LoginCommand
             $this->randomness(3, 5),
             $this->randomness(3, 5),
         ]);
-    }
-
-    /**
-     * @param $min
-     * @param $max
-     *
-     * @return string
-     */
-    private function randomness($min, $max = null)
-    {
-        $min = absint($min);
-        $max = absint($max ? $max : $min);
-        return bin2hex(random_bytes(random_int($min, $max)));
     }
 
     /**
