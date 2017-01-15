@@ -92,12 +92,17 @@ class LoginCommand
      */
     public function email($_, $assoc)
     {
+        $this->ensurePluginRequirementsMet();
+
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', $this->packagePath('template/email-default.mustache'));
-        $html_rendered = $this->renderEmailTemplate($template_file, $user);
+        $magic_url     = $this->makeMagicUrl($user);
         $domain        = $this->domain();
+        $html_rendered = $this->renderEmailTemplate(
+            compact('magic_url','domain'),
+            $assoc['template']
+        );
         $headers       = [
             'Content-Type: text/html',
             "From: WordPress <no-reply@{$domain}>",
@@ -115,19 +120,17 @@ class LoginCommand
     /**
      * Render the given email template, for the given user.
      *
-     * @param $template_file
-     * @param $user
+     * @param      $template_data
+     * @param null $template_file
      *
      * @return string
      */
-    private function renderEmailTemplate($template_file, $user)
+    private function renderEmailTemplate($template_data, $template_file = null)
     {
-        $this->ensurePluginRequirementsMet();
-
-        $magic_url = $this->makeMagicUrl($user);
-        $domain  = $this->domain();
-
-        return \WP_CLI\Utils\mustache_render($template_file, compact('magic_url','domain'));
+        return \WP_CLI\Utils\mustache_render(
+            $template_file ?: $this->packagePath('template/email-default.mustache'),
+            $template_data
+        );
     }
 
     /**
