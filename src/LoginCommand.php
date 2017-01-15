@@ -353,31 +353,12 @@ class LoginCommand
 
         $domain   = $this->domain();
         $endpoint = $this->endpoint();
-        $public   = $this->newPublicKey();
-        $private  = wp_hash_password("$public|$endpoint|$domain|$user->ID");
-        $magic    = [
-            'user'    => $user->ID,
-            'private' => $private,
-            'time'    => time(),
-        ];
+        $magic    = new MagicUrl($user, $domain);
+        $public   = $magic->getKey();
 
-        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 15);
+        set_transient(self::OPTION . '/' . $public, json_encode($magic->generate($endpoint)), MINUTE_IN_SECONDS * 15);
 
         return home_url("$endpoint/$public");
-    }
-
-    /**
-     * Generate a new cryptographically sound public key.
-     *
-     * @return string
-     */
-    private function newPublicKey()
-    {
-        return implode('-', [
-            $this->randomness(3, 5),
-            $this->randomness(3, 5),
-            $this->randomness(3, 5),
-        ]);
     }
 
     /**
