@@ -38,6 +38,12 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
+     * [--expires=<minutes>]
+     * : The number of minutes until the magic link expires.
+     * ---
+     * Default: 15
+     * ---
+     *
      * [--url-only]
      * : Output the magic link URL only.
      *
@@ -56,7 +62,8 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user      = $this->lookupUser($user_locator);
-        $magic_url = $this->makeMagicUrl($user);
+        $expires   = $assoc['expires'];
+        $magic_url = $this->makeMagicUrl($user, $expires);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_url);
@@ -67,7 +74,7 @@ class LoginCommand
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
-        WP_CLI::line('This link will self-destruct in 15 minutes, or as soon as it is used; whichever comes first.');
+        WP_CLI::line("This link will self-destruct in $expires minutes, or as soon as it is used; whichever comes first.");
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
             $this->launch($magic_url);
@@ -83,6 +90,12 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
+     * [--expires=<minutes>]
+     * : The number of minutes until the magic link expires.
+     * ---
+     * Default: 15
+     * ---
+     *
      * [--template=<path-to-template-file>]
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
@@ -97,10 +110,11 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $magic_url     = $this->makeMagicUrl($user);
+        $expires       = $assoc['expires'];
+        $magic_url     = $this->makeMagicUrl($user, $expires);
         $domain        = $this->domain();
         $html_rendered = $this->renderEmailTemplate(
-            compact('magic_url','domain'),
+            compact('magic_url','domain','expires'),
             $assoc['template']
         );
 
@@ -342,9 +356,11 @@ class LoginCommand
      *
      * @param  WP_User $user User to create login URL for
      *
-     * @return string  URL
+     * @param          $expires
+     *
+     * @return string URL
      */
-    private function makeMagicUrl(WP_User $user)
+    private function makeMagicUrl(WP_User $user, $expires)
     {
         static::debug("Generating a new magic login for User $user->ID");
 
@@ -356,7 +372,7 @@ class LoginCommand
         set_transient(
             self::OPTION . '/' . $public,
             json_encode($magic->generate($endpoint)),
-            MINUTE_IN_SECONDS * 15
+            ceil(MINUTE_IN_SECONDS * $expires)
         );
 
         return home_url("$endpoint/$public");
