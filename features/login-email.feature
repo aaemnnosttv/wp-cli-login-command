@@ -2,8 +2,8 @@ Feature: Magic sign-in links can be emailed to the user.
 
   Scenario: It can email the user with a magic sign-in link.
     Given a WP install
-    And I run `wp login install --activate`
-    And I run `wp user create john john@example.dev`
+    And a user john john@example.dev
+    And the login plugin is installed and active
     When I run `wp login email john --debug`
     Then STDOUT should contain:
       """
