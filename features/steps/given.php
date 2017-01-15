@@ -170,7 +170,7 @@ $steps->Given('/^a user ([a-z]+) ([\w\d\.@-]+)$/', function($world, $username, $
     $world->create_user($username, $email);
 });
 
-$steps->Given('/^the login plugin is installed( and active)$/', function($world, $active) {
+$steps->Given('/^the login plugin is installed( and active)?$/', function($world, $active = '') {
     $world->install_login_server_plugin($active);
 });
 
