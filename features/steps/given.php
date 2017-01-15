@@ -165,3 +165,7 @@ $steps->Given('/^a running web server$/', function($world) {
         )
     );
 });
+
+$steps->Given('/^a user ([a-z]+) ([\w\d\.@-]+)$/', function($world, $username, $email) {
+    $world->create_user($username, $email);
+});
