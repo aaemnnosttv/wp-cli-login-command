@@ -353,7 +353,11 @@ class LoginCommand
         $magic    = new MagicUrl($user, $domain);
         $public   = $magic->getKey();
 
-        set_transient(self::OPTION . '/' . $public, json_encode($magic->generate($endpoint)), MINUTE_IN_SECONDS * 15);
+        set_transient(
+            self::OPTION . '/' . $public,
+            json_encode($magic->generate($endpoint)),
+            MINUTE_IN_SECONDS * 15
+        );
 
         return home_url("$endpoint/$public");
     }
