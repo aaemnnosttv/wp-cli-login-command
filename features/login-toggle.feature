@@ -5,17 +5,17 @@ Feature: It can control the activation of its companion plugin
     And the login plugin is installed
 
     When I run `wp login toggle on`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      Success: Plugin 'wp-cli-login-server' activated.
+      Plugin 'wp-cli-login-server' activated.
       """
     And I run `wp login toggle off`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      Success: Plugin 'wp-cli-login-server' deactivated.
+      Plugin 'wp-cli-login-server' deactivated.
       """
     And I run `wp login toggle`
-    Then STDOUT should be:
+    Then STDOUT should contain:
       """
-      Success: Plugin 'wp-cli-login-server' activated.
+      Plugin 'wp-cli-login-server' activated.
       """
