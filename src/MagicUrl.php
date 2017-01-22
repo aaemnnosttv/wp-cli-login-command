@@ -86,6 +86,10 @@ class MagicUrl
      */
     private function newPublicKey()
     {
-        return $this->randomness(7, 12);
+        return implode('-', [
+            $this->randomness(3, 5),
+            $this->randomness(3, 5),
+            $this->randomness(3, 5),
+        ]);
     }
 }
