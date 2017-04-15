@@ -99,6 +99,9 @@ class LoginCommand
      * [--template=<path-to-template-file>]
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
+     * ---
+     * default:
+     * ---
      *
      * @param array $_
      * @param array $assoc
