@@ -367,18 +367,28 @@ class LoginCommand
     {
         static::debug("Generating a new magic login for User $user->ID");
 
-        $domain   = $this->domain();
         $endpoint = $this->endpoint();
-        $magic    = new MagicUrl($user, $domain);
-        $public   = $magic->getKey();
+        $magic    = new MagicUrl($user, $this->domain());
 
+        $this->persistMagicUrl($magic, $endpoint, $expires);
+
+        return home_url($endpoint . '/' . $magic->getKey());
+    }
+
+    /**
+     * Store the Magic Url to be used later.
+     *
+     * @param $magic
+     * @param $endpoint
+     * @param $expires
+     */
+    private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
+    {
         set_transient(
-            self::OPTION . '/' . $public,
+            self::OPTION . '/' . $magic->getKey(),
             json_encode($magic->generate($endpoint)),
-            ceil(MINUTE_IN_SECONDS * $expires)
+            ceil($expires)
         );
-
-        return home_url("$endpoint/$public");
     }
 
     /**
