@@ -42,9 +42,20 @@ or alternatively use the alias
 wp login as <user> [options]
 ```
 
-Create a magic sign-in link for the given user.  Outputs the created URL with some extra information for the user regarding usage and expiration.  URLs currently expire 15 minutes after creation, or at the time of use, whichever comes first.
+Create a magic sign-in link for the given user.  Outputs the created URL with some extra information for the user regarding usage and expiration.  URLs expire 15 minutes after creation ([configurable](#--expires)), or at the time of use, whichever comes first.
 
 > `<user>` can be passed as an User ID, username/login or email address. This is the same for all `login` commands which accept this as a parameter.
+
+#### `--expires=<seconds>`
+
+Set the lifetime of the magic link in seconds.
+
+    10 minutes = 600  
+    1 hour     = 3600  
+    1 day      = 86400
+
+Default: `900` (15 minutes)
+
 
 #### `--url-only`
 
@@ -61,6 +72,10 @@ wp login email <user> [options]
 ```
 
 Email a magic sign-in link to the given user.  Sends a nice HTML email to the user's email address containing their freshly created magic sign-in link.  Planning to add support for both HTML and plain text emails in the future.
+
+#### `--expires=<seconds>`
+
+[See above.](#--expires)
 
 #### `--template=<path-to-custom-template>`
 
