@@ -62,8 +62,8 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user      = $this->lookupUser($user_locator);
-        $expires   = $assoc['expires'];
-        $magic_url = $this->makeMagicUrl($user, $expires);
+        $expires   = human_time_diff(time(), time() + absint($assoc['expires']));
+        $magic_url = $this->makeMagicUrl($user, $assoc['expires']);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_url);
@@ -74,7 +74,7 @@ class LoginCommand
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
-        WP_CLI::line("This link will self-destruct in $expires minutes, or as soon as it is used; whichever comes first.");
+        WP_CLI::line("This link will self-destruct in $expires, or as soon as it is used; whichever comes first.");
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
             $this->launch($magic_url);
@@ -113,8 +113,8 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $expires       = $assoc['expires'];
-        $magic_url     = $this->makeMagicUrl($user, $expires);
+        $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
+        $magic_url     = $this->makeMagicUrl($user, $assoc['expires']);
         $domain        = $this->domain();
         $html_rendered = $this->renderEmailTemplate(
             compact('magic_url','domain','expires'),
