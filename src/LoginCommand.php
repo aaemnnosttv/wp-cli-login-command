@@ -38,10 +38,10 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
-     * [--expires=<minutes>]
-     * : The number of minutes until the magic link expires.
+     * [--expires=<seconds-from-now>]
+     * : The number of seconds from now until the magic link expires. Default: 15 minutes
      * ---
-     * Default: 15
+     * default: 900
      * ---
      *
      * [--url-only]
@@ -90,10 +90,10 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
-     * [--expires=<minutes>]
-     * : The number of minutes until the magic link expires.
+     * [--expires=<seconds-from-now>]
+     * : The number of seconds from now until the magic link expires. Default: 15 minutes
      * ---
-     * Default: 15
+     * default: 900
      * ---
      *
      * [--template=<path-to-template-file>]
@@ -365,7 +365,7 @@ class LoginCommand
      */
     private function makeMagicUrl(WP_User $user, $expires)
     {
-        static::debug("Generating a new magic login for User $user->ID");
+        static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
         $endpoint = $this->endpoint();
         $magic    = new MagicUrl($user, $this->domain());
