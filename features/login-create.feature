@@ -89,14 +89,14 @@ Feature: Users can generate single-use magic links that will log them in automat
       410 Gone
       """
 
-  @cmd-create--expires
-  Scenario: The expiration time can be set in minutes
+  @flag:expires
+  Scenario: The expiration time can be set in seconds
     Given a WP install
     And a running web server
     And a user monalisa leo@vinci.it
     And the login plugin is installed and active
 
-    When I run `wp login as monalisa --url-only --expires=.01 > magic_link`
+    When I run `wp login as monalisa --url-only --expires=1 > magic_link`
     And I run `sleep 1`
     And I run `curl -I -X GET $(cat magic_link)`
 
