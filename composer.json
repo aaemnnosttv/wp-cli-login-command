@@ -25,7 +25,7 @@
         "composer/semver": "^1.0"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "^0.24.0",
+        "wp-cli/wp-cli": "^1.0",
         "behat/behat": "~2.5",
         "johnpbloch/wordpress": "^4.6",
         "phpunit/phpunit": "^4.8"

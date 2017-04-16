@@ -11,6 +11,8 @@ use WP_User;
  */
 class LoginCommand
 {
+    use Randomness;
+
     /**
      * Option key for the persisted-data.
      */
@@ -36,6 +38,12 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
+     * [--expires=<seconds-from-now>]
+     * : The number of seconds from now until the magic link expires. Default: 15 minutes
+     * ---
+     * default: 900
+     * ---
+     *
      * [--url-only]
      * : Output the magic link URL only.
      *
@@ -54,7 +62,8 @@ class LoginCommand
         list($user_locator) = $_;
 
         $user      = $this->lookupUser($user_locator);
-        $magic_url = $this->makeMagicUrl($user);
+        $expires   = human_time_diff(time(), time() + absint($assoc['expires']));
+        $magic_url = $this->makeMagicUrl($user, $assoc['expires']);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_url);
@@ -65,7 +74,7 @@ class LoginCommand
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
         WP_CLI::line($magic_url);
         WP_CLI::line(str_repeat('-', strlen($magic_url)));
-        WP_CLI::line('This link will self-destruct in 15 minutes, or as soon as it is used; whichever comes first.');
+        WP_CLI::line("This link will self-destruct in $expires, or as soon as it is used; whichever comes first.");
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'launch')) {
             $this->launch($magic_url);
@@ -81,29 +90,38 @@ class LoginCommand
      * : A string which identifies the user to be logged in as.
      * Possible values are: User ID, User Login, or User Email.
      *
+     * [--expires=<seconds-from-now>]
+     * : The number of seconds from now until the magic link expires. Default: 15 minutes
+     * ---
+     * default: 900
+     * ---
+     *
      * [--template=<path-to-template-file>]
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
+     * ---
+     * default:
+     * ---
      *
      * @param array $_
      * @param array $assoc
      */
     public function email($_, $assoc)
     {
+        $this->ensurePluginRequirementsMet();
+
         list($user_locator) = $_;
 
         $user          = $this->lookupUser($user_locator);
-        $template_file = \WP_CLI\Utils\get_flag_value($assoc, 'template', $this->packagePath('template/email-default.mustache'));
-        $html_rendered = $this->renderEmailTemplate($template_file, $user);
+        $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
+        $magic_url     = $this->makeMagicUrl($user, $assoc['expires']);
         $domain        = $this->domain();
-        $headers       = [
-            'Content-Type: text/html',
-            "From: WordPress <no-reply@{$domain}>",
-        ];
+        $html_rendered = $this->renderEmailTemplate(
+            compact('magic_url','domain','expires'),
+            $assoc['template']
+        );
 
-        static::debug("Sending email to $user->user_email");
-
-        if (! wp_mail($user->user_email, "Magic log-in link for $domain", $html_rendered, $headers)) {
+        if (! $this->sendEmail($user, $domain, $html_rendered)) {
             WP_CLI::error('Email failed to send.');
         }
 
@@ -113,19 +131,17 @@ class LoginCommand
     /**
      * Render the given email template, for the given user.
      *
-     * @param $template_file
-     * @param $user
+     * @param      $template_data
+     * @param null $template_file
      *
      * @return string
      */
-    private function renderEmailTemplate($template_file, $user)
+    private function renderEmailTemplate($template_data, $template_file = null)
     {
-        $this->ensurePluginRequirementsMet();
-
-        $magic_url = $this->makeMagicUrl($user);
-        $domain  = $this->domain();
-
-        return \WP_CLI\Utils\mustache_render($template_file, compact('magic_url','domain'));
+        return \WP_CLI\Utils\mustache_render(
+            $template_file ?: $this->packagePath('template/email-default.mustache'),
+            $template_data
+        );
     }
 
     /**
@@ -343,52 +359,36 @@ class LoginCommand
      *
      * @param  WP_User $user User to create login URL for
      *
-     * @return string  URL
+     * @param          $expires
+     *
+     * @return string URL
      */
-    private function makeMagicUrl(WP_User $user)
+    private function makeMagicUrl(WP_User $user, $expires)
     {
-        static::debug("Generating a new magic login for User $user->ID");
+        static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
-        $domain   = $this->domain();
         $endpoint = $this->endpoint();
-        $public   = $this->newPublicKey();
-        $private  = wp_hash_password("$public|$endpoint|$domain|$user->ID");
-        $magic    = [
-            'user'    => $user->ID,
-            'private' => $private,
-            'time'    => time(),
-        ];
+        $magic    = new MagicUrl($user, $this->domain());
 
-        set_transient(self::OPTION . '/' . $public, json_encode($magic), MINUTE_IN_SECONDS * 15);
+        $this->persistMagicUrl($magic, $endpoint, $expires);
 
-        return home_url("$endpoint/$public");
+        return home_url($endpoint . '/' . $magic->getKey());
     }
 
     /**
-     * Generate a new cryptographically sound public key.
+     * Store the Magic Url to be used later.
      *
-     * @return string
+     * @param $magic
+     * @param $endpoint
+     * @param $expires
      */
-    private function newPublicKey()
+    private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
-        return implode('-', [
-            $this->randomness(3, 5),
-            $this->randomness(3, 5),
-            $this->randomness(3, 5),
-        ]);
-    }
-
-    /**
-     * @param $min
-     * @param $max
-     *
-     * @return string
-     */
-    private function randomness($min, $max = null)
-    {
-        $min = absint($min);
-        $max = absint($max ? $max : $min);
-        return bin2hex(random_bytes(random_int($min, $max)));
+        set_transient(
+            self::OPTION . '/' . $magic->getKey(),
+            json_encode($magic->generate($endpoint)),
+            ceil($expires)
+        );
     }
 
     /**
@@ -507,5 +507,28 @@ class LoginCommand
     private static function debug($message)
     {
         WP_CLI::debug($message, 'aaemnnosttv/wp-cli-login-command');
+    }
+
+    /**
+     * Send an email to the given user.
+     *
+     * @param $user
+     * @param $domain
+     * @param $html_rendered
+     *
+     * @return bool|void
+     */
+    private function sendEmail($user, $domain, $html_rendered)
+    {
+        static::debug("Sending email to $user->user_email");
+
+        return wp_mail($user->user_email,
+            "Magic log-in link for $domain",
+            $html_rendered,
+            [
+                'Content-Type: text/html',
+                "From: WordPress <no-reply@{$domain}>",
+            ]
+        );
     }
 }

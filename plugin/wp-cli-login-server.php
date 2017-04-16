@@ -201,7 +201,7 @@ class WP_CLI_Login_Server
         $common           = sprintf('Try again perhaps? or <a href="%s">Go Home &rarr;</a>', esc_url(home_url()));
         $message          = "<strong>$exceptionMessage</strong><p>$common</p>";
 
-        wp_die($message, $exception);
+        wp_die($message, $exception, ['response' => 410]);
     }
 
     /**

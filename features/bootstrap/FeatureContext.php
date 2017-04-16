@@ -315,6 +315,8 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->create_config( $subdir );
 
+		$this->variables['WP_DIR'] = $this->variables['RUN_DIR'] . '/' . $subdir;
+
 		$install_args = array(
 			'url' => "http://localhost:8888/$subdir",
 			'title' => 'WP CLI Site',
@@ -325,5 +327,14 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
 
 		$this->proc( 'wp core install', $install_args, $subdir )->run_check();
 	}
+
+	public function create_user($username, $email) {
+        $this->proc("wp user create '$username' '$email'", ['path' => $this->variables['WP_DIR']])->run_check();
+    }
+
+    public function install_login_server_plugin($activate) {
+	    $activate = $activate ? '--activate' : '';
+        $this->proc("wp login install --yes $activate", ['path' => $this->variables['WP_DIR']])->run_check();
+    }
 }
 
