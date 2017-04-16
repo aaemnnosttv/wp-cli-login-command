@@ -6,7 +6,7 @@
  * Author URI: https://aaemnnost.tv
  * Plugin URI: https://aaemnnost.tv/wp-cli-commands/login/
  *
- * Version: 1.1
+ * Version: 1.2
  */
 
 namespace WP_CLI_Login;
