@@ -489,12 +489,12 @@ class LoginCommand
         $url = home_url($path);
 
         /**
-         * If the global --url is passed it will set the HTTP_HOST
+         * If the global --url is passed it will set the HTTP_HOST.
+         * Here we replace the hostname in the default home URL with the one set by the command.
+         * This preserves compatibility with sites installed as a subdirectory.
          */
         if (! empty($_SERVER['HTTP_HOST'])) {
-            $url = preg_replace('#//[^/]+#', '//'. $_SERVER['HTTP_HOST'], $url, 1);
-
-            return set_url_scheme($url);
+            return preg_replace('#//[^/]+#', '//'. $_SERVER['HTTP_HOST'], $url, 1);
         }
 
         return $url;
