@@ -227,6 +227,19 @@ class WP_CLI_Login_Server
 
         return "$this->publicKey|$this->endpoint|$domain|$user->ID";
     }
+
+    /**
+     * Get the home URL.
+     *
+     * @return string
+     */
+    private function homeUrl()
+    {
+        /* wp-cli server-command filters home & siteurl to work and saves the original in a global. */
+        return isset($GLOBALS['_wp_cli_original_url'])
+            ? $GLOBALS['_wp_cli_original_url']
+            : home_url();
+    }
 }
 
 class BadMagic extends Exception
