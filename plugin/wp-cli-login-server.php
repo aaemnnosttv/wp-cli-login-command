@@ -223,9 +223,12 @@ class WP_CLI_Login_Server
      */
     private function signature(WP_User $user)
     {
-        $domain = parse_url(home_url(), PHP_URL_HOST);
-
-        return "$this->publicKey|$this->endpoint|$domain|$user->ID";
+        return join('|', [
+            $this->publicKey,
+            $this->endpoint,
+            parse_url($this->homeUrl(), PHP_URL_HOST),
+            $user->ID,
+        ]);
     }
 
     /**
