@@ -21,7 +21,7 @@ class LoginCommand
     /**
      * Required version constraint of the wp-cli-login-server companion plugin.
      */
-    const REQUIRED_PLUGIN_VERSION = '^1.1';
+    const REQUIRED_PLUGIN_VERSION = '^1.2';
 
     /**
      * Package instance
@@ -372,7 +372,7 @@ class LoginCommand
 
         $this->persistMagicUrl($magic, $endpoint, $expires);
 
-        return home_url($endpoint . '/' . $magic->getKey());
+        return $this->homeUrl($endpoint . '/' . $magic->getKey());
     }
 
     /**
@@ -475,6 +475,29 @@ class LoginCommand
     private function domain()
     {
         return parse_url(home_url(), PHP_URL_HOST);
+    }
+
+    /**
+     * Get the home URL.
+     *
+     * @param string $path
+     *
+     * @return string
+     */
+    private function homeUrl($path = '')
+    {
+        $url = home_url($path);
+
+        /**
+         * If the global --url is passed it will set the HTTP_HOST.
+         * Here we replace the hostname in the default home URL with the one set by the command.
+         * This preserves compatibility with sites installed as a subdirectory.
+         */
+        if (! empty($_SERVER['HTTP_HOST'])) {
+            return preg_replace('#//[^/]+#', '//'. $_SERVER['HTTP_HOST'], $url, 1);
+        }
+
+        return $url;
     }
 
     /**

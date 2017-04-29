@@ -6,7 +6,7 @@
  * Author URI: https://aaemnnost.tv
  * Plugin URI: https://aaemnnost.tv/wp-cli-commands/login/
  *
- * Version: 1.1
+ * Version: 1.2
  */
 
 namespace WP_CLI_Login;
@@ -223,9 +223,25 @@ class WP_CLI_Login_Server
      */
     private function signature(WP_User $user)
     {
-        $domain = parse_url(home_url(), PHP_URL_HOST);
+        return join('|', [
+            $this->publicKey,
+            $this->endpoint,
+            parse_url($this->homeUrl(), PHP_URL_HOST),
+            $user->ID,
+        ]);
+    }
 
-        return "$this->publicKey|$this->endpoint|$domain|$user->ID";
+    /**
+     * Get the home URL.
+     *
+     * @return string
+     */
+    private function homeUrl()
+    {
+        /* wp-cli server-command filters home & siteurl to work and saves the original in a global. */
+        return isset($GLOBALS['_wp_cli_original_url'])
+            ? $GLOBALS['_wp_cli_original_url']
+            : home_url();
     }
 }
 
