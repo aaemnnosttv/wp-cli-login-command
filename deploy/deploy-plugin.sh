@@ -13,5 +13,8 @@ bash git-subsplit.sh publish --heads=master --no-tags plugin/:git@github.com:aae
 
 # The server plugin will be tagged 'server-x.x.x'.
 # Strip the prefix and tag the server repo with 'x.x.x'
-git tag "${TRAVIS_TAG#server-}" "$TRAVIS_COMMIT" --path="${PWD}/.subsplit"
-git push origin master --tags --path="${PWD}/.subsplit"
+(
+    cd .subsplit
+    git tag "${TRAVIS_TAG#server-}" "$TRAVIS_COMMIT"
+    git push origin master --tags
+)
