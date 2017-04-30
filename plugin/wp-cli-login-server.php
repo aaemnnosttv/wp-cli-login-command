@@ -184,7 +184,25 @@ class WP_CLI_Login_Server
     private function loginUser(WP_User $user)
     {
         delete_transient($this->magicKey());
+
         wp_set_auth_cookie($user->ID);
+
+        /**
+         * Fires after the user has successfully logged in via the WP-CLI Login Server.
+         *
+         * @param string  $user_login Username.
+         * @param WP_User $user       WP_User object of the logged-in user.
+         */
+        do_action('wp_cli_login/login', $user->user_login, $user);
+
+        /**
+         * Fires after the user has successfully logged in.
+         *
+         * @param string  $user_login Username.
+         * @param WP_User $user       WP_User object of the logged-in user.
+         */
+        do_action('wp_login', $user->user_login, $user);
+
         wp_redirect(admin_url());
         exit;
     }
