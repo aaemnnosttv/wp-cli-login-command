@@ -350,8 +350,11 @@ class LoginCommand
         self::debug("Toggling companion plugin: $setState");
 
         $command = $setState == 'on' ? 'activate' : 'deactivate';
+        $options = array(
+            'return' => true,
+        );
 
-        WP_CLI::run_command(['plugin', $command, 'wp-cli-login-server']);
+        WP_CLI::runcommand('plugin '.$command.' wp-cli-login-server', $options);
     }
 
     /**
