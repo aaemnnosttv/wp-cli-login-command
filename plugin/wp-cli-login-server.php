@@ -228,9 +228,10 @@ class WP_CLI_Login_Server
          * Filters the login redirect URL for WP-CLI Login Server requests.
          *
          * @param string           $redirect_to           The redirect destination URL.
+         * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
          * @param WP_User          $user                  WP_User object.
          */
-        $redirect_to = apply_filters('wp_cli_login/login_redirect', $redirect_to, $user);
+        $redirect_to = apply_filters('wp_cli_login/login_redirect', $redirect_to, '', $user);
 
         /**
          * Figure out where to redirect the user for the default wp-admin URL based on the user's capabilities.
