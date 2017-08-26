@@ -351,7 +351,7 @@ class LoginCommand
 
         $command = $setState == 'on' ? 'activate' : 'deactivate';
 
-        WP_CLI::run_command(['plugin', $command, 'wp-cli-login-server']);
+        WP_CLI::runcommand("plugin $command wp-cli-login-server");
     }
 
     /**
