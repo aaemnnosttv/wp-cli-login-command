@@ -30,6 +30,7 @@
         "phpunit/phpunit": "^4.8"
     },
     "scripts": {
+        "test": "phpunit",
         "run-behat": "behat --ansi"
     }
 }
