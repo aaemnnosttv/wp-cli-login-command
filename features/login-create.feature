@@ -97,7 +97,7 @@ Feature: Users can generate single-use magic links that will log them in automat
     And the login plugin is installed and active
 
     When I run `wp login as monalisa --url-only --expires=1 > magic_link`
-    And I run `sleep 1`
+    And I run `sleep 2`
     And I run `curl -I -X GET $(cat magic_link)`
 
     Then STDOUT should contain:
