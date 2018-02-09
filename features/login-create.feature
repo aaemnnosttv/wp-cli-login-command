@@ -89,7 +89,7 @@ Feature: Users can generate single-use magic links that will log them in automat
       410 Gone
       """
 
-  @flag:expires
+  @option:expires
   Scenario: The expiration time can be set in seconds
     Given a WP install
     And a running web server
