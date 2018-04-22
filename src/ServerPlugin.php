@@ -35,7 +35,7 @@ class ServerPlugin
      */
     public static function isActive()
     {
-        return is_plugin_active(self::PLUGIN_FILE);
+        return class_exists(WP_CLI_Login_Server::class, false);
     }
 
     /**
