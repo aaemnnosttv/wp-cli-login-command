@@ -174,3 +174,6 @@ $steps->Given('/^the login plugin is installed( and active)?$/', function($world
     $world->install_login_server_plugin($active);
 });
 
+$steps->Given('/^the login plugin is installed as an mu plugin$/', function($world) {
+    $world->install_login_server_plugin('mu');
+});

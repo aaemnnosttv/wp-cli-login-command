@@ -272,6 +272,9 @@ class LoginCommand
      * [--activate]
      * : Activate the plugin after installing.
      *
+     * [--mu]
+     * : Install as a Must Use plugin.
+     *
      * [--yes]
      * : Suppress confirmation to overwrite the installed plugin if it exists.
      *
@@ -282,7 +285,12 @@ class LoginCommand
     {
         static::debug('Installing plugin.');
 
-        $installed = $this->installedPlugin();
+        if (\WP_CLI\Utils\get_flag_value($assoc, 'mu')) {
+            $installed = ServerPlugin::mustUse();
+        } else {
+            $installed = $this->installedPlugin();
+        }
+
         $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
 
         if ($installed->exists() && ! $suppress_prompt && ! $this->confirmOverwrite($installed)) {

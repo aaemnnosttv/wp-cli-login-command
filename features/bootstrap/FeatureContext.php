@@ -333,8 +333,12 @@ class FeatureContext extends BehatContext implements ClosuredContextInterface {
     }
 
     public function install_login_server_plugin($activate) {
-	    $activate = $activate ? '--activate' : '';
-        $this->proc("wp login install --yes $activate", ['path' => $this->variables['WP_DIR']])->run_check();
+	    if ('mu' === $activate) {
+            $this->proc("wp login install --mu", ['path' => $this->variables['WP_DIR']])->run_check();
+        } else {
+            $activate = $activate ? '--activate' : '';
+            $this->proc("wp login install --yes $activate", ['path' => $this->variables['WP_DIR']])->run_check();
+        }
     }
 }
 

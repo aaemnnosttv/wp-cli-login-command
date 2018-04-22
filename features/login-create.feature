@@ -14,6 +14,16 @@ Feature: Users can generate single-use magic links that will log them in automat
       Success: Magic login link created!
       """
 
+  @install:mu @issue:14
+  Scenario: It works without activation when installed as an mu plugin.
+    Given a WP install
+    And the login plugin is installed as an mu plugin
+    When I try `wp login create admin`
+    Then STDOUT should contain:
+      """
+      Success: Magic login link created!
+      """
+
   Scenario: It can generate magic login URLs using a user ID, login, or email address.
     Given a WP install
     And the login plugin is installed and active
@@ -105,7 +115,7 @@ Feature: Users can generate single-use magic links that will log them in automat
       410 Gone
       """
 
-  @issue-7
+  @issue:7
   Scenario: It works for subdirectory installs too.
     Given a WP install in 'subdir'
     And a running web server
