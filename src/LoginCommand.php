@@ -442,13 +442,7 @@ class LoginCommand
      */
     private function installedPlugin()
     {
-        static $plugin;
-
-        if (! $plugin) {
-            $plugin = ServerPlugin::installed();
-        }
-
-        return $plugin;
+        return ServerPlugin::installed();
     }
 
     /**
@@ -458,13 +452,7 @@ class LoginCommand
      */
     private function bundledPlugin()
     {
-        static $plugin;
-
-        if (! $plugin) {
-            $plugin = new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
-        }
-
-        return $plugin;
+        return new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
     }
 
     /**
