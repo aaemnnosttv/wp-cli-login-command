@@ -420,7 +420,7 @@ class LoginCommand
     {
         $plugin = $this->installedPlugin();
 
-        if (! ServerPlugin::isActive() || ! $plugin->exists()) {
+        if (! ServerPlugin::isActive()) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
         }
 
