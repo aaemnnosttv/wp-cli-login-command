@@ -272,6 +272,9 @@ class LoginCommand
      * [--activate]
      * : Activate the plugin after installing.
      *
+     * [--mu]
+     * : Install as a Must Use plugin.
+     *
      * [--yes]
      * : Suppress confirmation to overwrite the installed plugin if it exists.
      *
@@ -282,7 +285,12 @@ class LoginCommand
     {
         static::debug('Installing plugin.');
 
-        $installed = $this->installedPlugin();
+        if (\WP_CLI\Utils\get_flag_value($assoc, 'mu')) {
+            $installed = ServerPlugin::mustUse();
+        } else {
+            $installed = $this->installedPlugin();
+        }
+
         $suppress_prompt = \WP_CLI\Utils\get_flag_value($assoc, 'yes');
 
         if ($installed->exists() && ! $suppress_prompt && ! $this->confirmOverwrite($installed)) {
@@ -420,7 +428,7 @@ class LoginCommand
     {
         $plugin = $this->installedPlugin();
 
-        if (! ServerPlugin::isActive() || ! $plugin->exists()) {
+        if (! ServerPlugin::isActive()) {
             WP_CLI::error('This command requires the companion plugin to be installed and active. Run `wp login install --activate` and try again.');
         }
 
@@ -442,13 +450,7 @@ class LoginCommand
      */
     private function installedPlugin()
     {
-        static $plugin;
-
-        if (! $plugin) {
-            $plugin = ServerPlugin::installed();
-        }
-
-        return $plugin;
+        return ServerPlugin::installed();
     }
 
     /**
@@ -458,13 +460,7 @@ class LoginCommand
      */
     private function bundledPlugin()
     {
-        static $plugin;
-
-        if (! $plugin) {
-            $plugin = new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
-        }
-
-        return $plugin;
+        return new ServerPlugin($this->packagePath('plugin/wp-cli-login-server.php'));
     }
 
     /**

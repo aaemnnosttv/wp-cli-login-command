@@ -3,6 +3,7 @@
 namespace WP_CLI_Login;
 
 use Composer\Semver\Semver;
+use WP_CLI_Login\WP_CLI_Login_Server;
 
 class ServerPlugin
 {
@@ -34,7 +35,7 @@ class ServerPlugin
      */
     public static function isActive()
     {
-        return is_plugin_active(self::PLUGIN_FILE);
+        return class_exists(WP_CLI_Login_Server::class, false);
     }
 
     /**
@@ -44,7 +45,21 @@ class ServerPlugin
      */
     public static function installed()
     {
+        $must_use = static::mustUse();
+
+        if ($must_use->exists()) {
+            return $must_use;
+        }
+
         return new static(WP_PLUGIN_DIR . '/' . static::PLUGIN_FILE);
+    }
+
+    /**
+     * @return MustUseServerPlugin
+     */
+    public static function mustUse()
+    {
+        return new MustUseServerPlugin(WPMU_PLUGIN_DIR . '/' . basename(static::PLUGIN_FILE));
     }
 
     /**
