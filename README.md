@@ -77,6 +77,12 @@ Email a magic sign-in link to the given user.  Sends a nice HTML email to the us
 
 [See above.](#--expiresseconds)
 
+#### `--subject=<email-subject>`
+
+Optionally override the default email subject with your own custom string. You may use the `{{ domain }}` placeholder.
+
+Default: Magic log-in link for {{domain}}
+
 #### `--template=<path-to-custom-template>`
 
 Optionally override the default email template with your own by providing the path to a different template file to use.
