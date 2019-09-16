@@ -149,9 +149,10 @@ class LoginCommand
     private function renderEmailSubject($template_data, $subject)
     {
         $m = new \Mustache_Engine(
-        array(
-            'escape' => function ( $val ) {
-                return $val; },
+            array(
+                'escape' => function ($val) {
+                    return $val;
+                },
             )
         );
         return $m->render($subject, $template_data);
