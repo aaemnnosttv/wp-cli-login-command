@@ -96,6 +96,12 @@ class LoginCommand
      * default: 900
      * ---
      *
+     * [--subject=<email-subject>]
+     * : The email subject field.
+     * ---
+     * default: Magic log-in link for {{domain}}
+     * ---
+     *
      * [--template=<path-to-template-file>]
      * : The path to a file to use for a custom email template.
      * Uses Mustache templating for dynamic html.
@@ -116,16 +122,40 @@ class LoginCommand
         $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
         $magic_url     = $this->makeMagicUrl($user, $assoc['expires']);
         $domain        = $this->domain();
+        $subject       = $this->mustacheRender(
+            $assoc['subject'],
+            compact('domain')
+        );
         $html_rendered = $this->renderEmailTemplate(
             compact('magic_url','domain','expires'),
             $assoc['template']
         );
 
-        if (! $this->sendEmail($user, $domain, $html_rendered)) {
+        if (! $this->sendEmail($user, $domain, $subject, $html_rendered)) {
             WP_CLI::error('Email failed to send.');
         }
 
         WP_CLI::success('Email sent.');
+    }
+
+    /**
+     * Render the given mustache template string.
+     *
+     * @param $template
+     * @param $data
+     *
+     * @return string
+     */
+    private function mustacheRender($template, $data = [])
+    {
+        $m = new \Mustache_Engine(
+            [
+                'escape' => function ($val) {
+                    return $val;
+                },
+            ]
+        );
+        return $m->render($template, $data);
     }
 
     /**
@@ -533,16 +563,17 @@ class LoginCommand
      *
      * @param $user
      * @param $domain
+     * @param $subject
      * @param $html_rendered
      *
      * @return bool|void
      */
-    private function sendEmail($user, $domain, $html_rendered)
+    private function sendEmail($user, $domain, $subject, $html_rendered)
     {
         static::debug("Sending email to $user->user_email");
 
         return wp_mail($user->user_email,
-            "Magic log-in link for $domain",
+            $subject,
             $html_rendered,
             [
                 'Content-Type: text/html',
