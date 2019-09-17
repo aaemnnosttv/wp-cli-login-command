@@ -149,11 +149,11 @@ class LoginCommand
     private function mustacheRender($template, $data = [])
     {
         $m = new \Mustache_Engine(
-            array(
+            [
                 'escape' => function ($val) {
                     return $val;
                 },
-            )
+            ]
         );
         return $m->render($template, $data);
     }
