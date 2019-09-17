@@ -122,9 +122,9 @@ class LoginCommand
         $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
         $magic_url     = $this->makeMagicUrl($user, $assoc['expires']);
         $domain        = $this->domain();
-        $subject       = $this->renderEmailSubject(
-            compact('domain'),
-            $assoc['subject']
+        $subject       = $this->mustacheRender(
+            $assoc['subject'],
+            compact('domain')
         );
         $html_rendered = $this->renderEmailTemplate(
             compact('magic_url','domain','expires'),
@@ -139,14 +139,14 @@ class LoginCommand
     }
 
     /**
-     * Render the given email subject, for the given user.
+     * Render the given mustache template string.
      *
-     * @param $template_data
-     * @param $subject
+     * @param $template
+     * @param $data
      *
      * @return string
      */
-    private function renderEmailSubject($template_data, $subject)
+    private function mustacheRender($template, $data = [])
     {
         $m = new \Mustache_Engine(
             array(
@@ -155,7 +155,7 @@ class LoginCommand
                 },
             )
         );
-        return $m->render($subject, $template_data);
+        return $m->render($template, $data);
     }
 
     /**
