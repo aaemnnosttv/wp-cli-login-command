@@ -422,9 +422,9 @@ class LoginCommand
     /**
      * Store the Magic Url to be used later.
      *
-     * @param $magic
-     * @param $endpoint
-     * @param $expires
+     * @param MagicUrl $magic
+     * @param string $endpoint
+     * @param int $expires
      */
     private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
