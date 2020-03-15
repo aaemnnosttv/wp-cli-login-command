@@ -127,6 +127,7 @@ class WP_CLI_Login_Server
             $magic = $this->loadMagic();
             $user  = $this->validate($magic);
             $this->loginUser($user);
+            $this->loginRedirect($user, $magic->redirect_url);
         } catch (Exception $e) {
             $this->abort($e);
         }
@@ -200,8 +201,6 @@ class WP_CLI_Login_Server
          * @param WP_User $user       WP_User object of the logged-in user.
          */
         do_action('wp_login', $user->user_login, $user);
-
-        $this->loginRedirect($user);
     }
 
     /**
@@ -210,9 +209,12 @@ class WP_CLI_Login_Server
      * Mostly copied from wp-login.php
      *
      * @param WP_User $user
+     * @param string  $redirect_url
      */
-    private function loginRedirect(WP_User $user)
+    private function loginRedirect(WP_User $user, $redirect_url)
     {
+        $redirect_to = $redirect_url ?: admin_url();
+
         /**
          * Filters the login redirect URL.
          *
@@ -220,7 +222,7 @@ class WP_CLI_Login_Server
          * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
          * @param WP_User          $user                  WP_User object.
          */
-        $redirect_to = apply_filters('login_redirect', admin_url(), '', $user);
+        $redirect_to = apply_filters('login_redirect', $redirect_to, '', $user);
 
         /**
          * Filters the login redirect URL for WP-CLI Login Server requests.
@@ -284,16 +286,18 @@ class WP_CLI_Login_Server
      * Build the signature to check against the private key for this request.
      *
      * @param WP_User $user
+     * @param string $redirect_url
      *
      * @return string
      */
-    private function signature(WP_User $user)
+    private function signature(WP_User $user, $redirect_url)
     {
         return join('|', [
             $this->publicKey,
             $this->endpoint,
             parse_url($this->homeUrl(), PHP_URL_HOST),
             $user->ID,
+            $redirect_url,
         ]);
     }
 
