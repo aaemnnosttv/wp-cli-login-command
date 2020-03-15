@@ -22,7 +22,7 @@ script:
 
 cache:
   directories:
-    - vendor
+    - $HOME/.cache/composer
 
 before_deploy:
   - openssl aes-256-cbc -K $encrypted_70f7c684b483_key -iv $encrypted_70f7c684b483_iv -in deploy/key.enc -out deploy/key -d
