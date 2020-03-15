@@ -140,6 +140,8 @@ class WP_CLI_Login_Server
      *
      * @throws InvalidUser
      * @throws AuthenticationFailure
+     *
+     * @return WP_User
      */
     private function validate(Magic $magic)
     {
