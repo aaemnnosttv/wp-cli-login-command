@@ -34,4 +34,4 @@ deploy:
   on:
     condition: [[ $TRAVIS_TAG == server-* ]]
     tags: true
-    php: 7.0
+    php: 7.4
