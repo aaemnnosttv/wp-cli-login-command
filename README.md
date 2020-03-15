@@ -56,6 +56,11 @@ Set the lifetime of the magic link in seconds.
 
 Default: `900` (15 minutes)
 
+#### `--redirect-url=<url>`
+
+Set the URL to redirect to upon successfully logging in. Defaults to `admin_url()`.
+
+> Note: The redirect is executed using [`wp_safe_redirect`](https://developer.wordpress.org/reference/functions/wp_safe_redirect/) which restricts the destination URL using a list of allowed hosts. By default, this is limited to the domain of the site, but can be extended using the [`allowed_redirect_hosts`](https://developer.wordpress.org/reference/hooks/allowed_redirect_hosts/) filter.
 
 #### `--url-only`
 
@@ -76,6 +81,10 @@ Email a magic sign-in link to the given user.  Sends a nice HTML email to the us
 #### `--expires=<seconds>`
 
 [See above.](#--expiresseconds)
+
+#### `--redirect-url=<url>`
+
+[See above.](#--redirect-urlurl)
 
 #### `--subject=<email-subject>`
 

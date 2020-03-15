@@ -6,12 +6,11 @@
  * Author URI: https://aaemnnost.tv
  * Plugin URI: https://aaemnnost.tv/wp-cli-commands/login/
  *
- * Version: 1.2
+ * Version: 1.3
  */
 
 namespace WP_CLI_Login;
 
-use stdClass;
 use WP_User;
 use Exception;
 
@@ -128,6 +127,7 @@ class WP_CLI_Login_Server
             $magic = $this->loadMagic();
             $user  = $this->validate($magic);
             $this->loginUser($user);
+            $this->loginRedirect($user, $magic->redirect_url);
         } catch (Exception $e) {
             $this->abort($e);
         }
@@ -136,20 +136,20 @@ class WP_CLI_Login_Server
     /**
      * Validate the magic login, and return the user to login if successful.
      *
-     * @param stdClass $magic
+     * @param Magic $magic
      *
-     * @throws AuthenticationFailure
      * @throws InvalidUser
+     * @throws AuthenticationFailure
      *
      * @return WP_User
      */
-    private function validate(stdClass $magic)
+    private function validate(Magic $magic)
     {
-        if (empty($magic->user) || (! $user = new WP_User($magic->user)) || ! $user->exists()) {
+        if (! $magic->user || (! $user = new WP_User($magic->user)) || ! $user->exists()) {
             throw new InvalidUser('No user found or no longer exists.');
         }
 
-        if (empty($magic->private) || ! wp_check_password($this->signature($user), $magic->private)) {
+        if (! $magic->private || ! wp_check_password($this->signature($user, $magic->redirect_url), $magic->private)) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
@@ -161,19 +161,20 @@ class WP_CLI_Login_Server
      *
      * @throws BadMagic
      *
-     * @return stdClass
+     * @return Magic
      */
     private function loadMagic()
     {
         $magic = json_decode(
-            get_transient($this->magicKey())
+            get_transient($this->magicKey()),
+            true
         );
 
         if (is_null($magic)) {
             throw new BadMagic('The attempted magic login has expired or already been used.');
         }
 
-        return $magic;
+        return new Magic($magic);
     }
 
     /**
@@ -202,8 +203,6 @@ class WP_CLI_Login_Server
          * @param WP_User $user       WP_User object of the logged-in user.
          */
         do_action('wp_login', $user->user_login, $user);
-
-        $this->loginRedirect($user);
     }
 
     /**
@@ -212,9 +211,12 @@ class WP_CLI_Login_Server
      * Mostly copied from wp-login.php
      *
      * @param WP_User $user
+     * @param string  $redirect_url
      */
-    private function loginRedirect(WP_User $user)
+    private function loginRedirect(WP_User $user, $redirect_url)
     {
+        $redirect_to = $redirect_url ?: admin_url();
+
         /**
          * Filters the login redirect URL.
          *
@@ -222,7 +224,7 @@ class WP_CLI_Login_Server
          * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
          * @param WP_User          $user                  WP_User object.
          */
-        $redirect_to = apply_filters('login_redirect', admin_url(), '', $user);
+        $redirect_to = apply_filters('login_redirect', $redirect_to, '', $user);
 
         /**
          * Filters the login redirect URL for WP-CLI Login Server requests.
@@ -286,16 +288,18 @@ class WP_CLI_Login_Server
      * Build the signature to check against the private key for this request.
      *
      * @param WP_User $user
+     * @param string $redirect_url
      *
      * @return string
      */
-    private function signature(WP_User $user)
+    private function signature(WP_User $user, $redirect_url)
     {
         return join('|', [
             $this->publicKey,
             $this->endpoint,
             parse_url($this->homeUrl(), PHP_URL_HOST),
             $user->ID,
+            $redirect_url,
         ]);
     }
 
@@ -310,6 +314,21 @@ class WP_CLI_Login_Server
         return isset($GLOBALS['_wp_cli_original_url'])
             ? $GLOBALS['_wp_cli_original_url']
             : home_url();
+    }
+}
+
+/**
+ * @property-read int $user
+ * @property-read string $private
+ * @property-read string $redirect_url
+ */
+class Magic {
+    protected $data;
+    public function __construct(array $data) {
+        $this->data = $data;
+    }
+    public function __get($property) {
+        return isset($this->data[$property]) ? $this->data[$property] : null;
     }
 }
 

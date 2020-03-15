@@ -24,16 +24,23 @@ class MagicUrl
     private $domain;
 
     /**
+     * @var string URL to redirect to upon successful login.
+     */
+    private $redirect_url;
+
+    /**
      * MagicUrl constructor.
      *
      * @param WP_User $user
-     * @param         $domain
+     * @param string $domain
+     * @param string $redirect_url
      */
-    public function __construct(WP_User $user, $domain)
+    public function __construct(WP_User $user, $domain, $redirect_url = null)
     {
         $this->user = $user;
         $this->domain = $domain;
         $this->key = $this->newPublicKey();
+        $this->redirect_url = $redirect_url;
     }
 
     /**
@@ -56,9 +63,10 @@ class MagicUrl
     public function generate($endpoint)
     {
         return [
-            'user'    => $this->user->ID,
-            'private' => wp_hash_password($this->signature($endpoint)),
-            'time'    => time(),
+            'user'         => $this->user->ID,
+            'private'      => wp_hash_password($this->signature($endpoint)),
+            'redirect_url' => $this->redirect_url,
+            'time'         => time(),
         ];
     }
 
@@ -76,6 +84,7 @@ class MagicUrl
             $endpoint,
             $this->domain,
             $this->user->ID,
+            $this->redirect_url,
         ]);
     }
 
