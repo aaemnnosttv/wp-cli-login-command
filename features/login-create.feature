@@ -165,3 +165,23 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
       Magic link launched!
       """
+
+  @option:redirect-url
+  Scenario: It can redirect the user to an alternate URL on successful login.
+    Given a WP install
+    And a running web server
+    And the login plugin is installed and active
+    And I run `wp login as admin --url-only --redirect-url=http://localhost:8888/custom-redirect > magic_link`
+    And I run `curl -IX GET $(cat magic_link)`
+    Then STDOUT should contain:
+      """
+      Set-Cookie: wordpress_logged_in_
+      """
+    Then STDOUT should contain:
+      """
+      302 Found
+      """
+    Then STDOUT should contain:
+      """
+      Location: http://localhost:8888/custom-redirect
+      """
