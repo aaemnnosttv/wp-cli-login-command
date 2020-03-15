@@ -44,11 +44,14 @@ class LoginCommand
      * default: 900
      * ---
      *
+     * [--redirect-url=<url>]
+     * : The URL to redirect to upon successfully logging in.
+     *
      * [--url-only]
      * : Output the magic link URL only.
      *
      * [--launch]
-     * : Launch the magic url immediately in your web browser.
+     * : Launch the magic URL immediately in your web browser.
      *
      * @param array $_
      * @param array $assoc
@@ -63,7 +66,7 @@ class LoginCommand
 
         $user      = $this->lookupUser($user_locator);
         $expires   = human_time_diff(time(), time() + absint($assoc['expires']));
-        $magic_url = $this->makeMagicUrl($user, $assoc['expires']);
+        $magic_url = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url']);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_url);
@@ -96,6 +99,9 @@ class LoginCommand
      * default: 900
      * ---
      *
+     * [--redirect-url=<url>]
+     * : The URL to redirect to upon successfully logging in.
+     *
      * [--subject=<email-subject>]
      * : The email subject field.
      * ---
@@ -120,7 +126,7 @@ class LoginCommand
 
         $user          = $this->lookupUser($user_locator);
         $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
-        $magic_url     = $this->makeMagicUrl($user, $assoc['expires']);
+        $magic_url     = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url']);
         $domain        = $this->domain();
         $subject       = $this->mustacheRender(
             $assoc['subject'],
@@ -395,18 +401,18 @@ class LoginCommand
     /**
      * Create a magic login URL
      *
-     * @param  WP_User $user User to create login URL for
-     *
-     * @param          $expires
+     * @param WP_User  $user User to create login URL for.
+     * @param int      $expires Number of seconds from now until the magic link expires.
+     * @param string   $redirect_url URL to redirect to upon successfully logging in.
      *
      * @return string URL
      */
-    private function makeMagicUrl(WP_User $user, $expires)
+    private function makeMagicUrl(WP_User $user, $expires, $redirect_url)
     {
         static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
         $endpoint = $this->endpoint();
-        $magic    = new MagicUrl($user, $this->domain());
+        $magic    = new MagicUrl($user, $this->domain(), $redirect_url);
 
         $this->persistMagicUrl($magic, $endpoint, $expires);
 
