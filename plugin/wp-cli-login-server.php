@@ -11,7 +11,6 @@
 
 namespace WP_CLI_Login;
 
-use stdClass;
 use WP_User;
 use Exception;
 
@@ -136,20 +135,18 @@ class WP_CLI_Login_Server
     /**
      * Validate the magic login, and return the user to login if successful.
      *
-     * @param stdClass $magic
+     * @param Magic $magic
      *
-     * @throws AuthenticationFailure
      * @throws InvalidUser
-     *
-     * @return WP_User
+     * @throws AuthenticationFailure
      */
-    private function validate(stdClass $magic)
+    private function validate(Magic $magic)
     {
-        if (empty($magic->user) || (! $user = new WP_User($magic->user)) || ! $user->exists()) {
+        if (! $magic->user || (! $user = new WP_User($magic->user)) || ! $user->exists()) {
             throw new InvalidUser('No user found or no longer exists.');
         }
 
-        if (empty($magic->private) || ! wp_check_password($this->signature($user), $magic->private)) {
+        if (! $magic->private || ! wp_check_password($this->signature($user, $magic->redirect_url), $magic->private)) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
@@ -161,19 +158,20 @@ class WP_CLI_Login_Server
      *
      * @throws BadMagic
      *
-     * @return stdClass
+     * @return Magic
      */
     private function loadMagic()
     {
         $magic = json_decode(
-            get_transient($this->magicKey())
+            get_transient($this->magicKey()),
+            true
         );
 
         if (is_null($magic)) {
             throw new BadMagic('The attempted magic login has expired or already been used.');
         }
 
-        return $magic;
+        return new Magic($magic);
     }
 
     /**
@@ -310,6 +308,21 @@ class WP_CLI_Login_Server
         return isset($GLOBALS['_wp_cli_original_url'])
             ? $GLOBALS['_wp_cli_original_url']
             : home_url();
+    }
+}
+
+/**
+ * @property-read int $user
+ * @property-read string $private
+ * @property-read string $redirect_url
+ */
+class Magic {
+    protected $data;
+    public function __construct(array $data) {
+        $this->data = $data;
+    }
+    public function __get($property) {
+        return isset($this->data[$property]) ? $this->data[$property] : null;
     }
 }
 
