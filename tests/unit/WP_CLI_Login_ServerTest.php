@@ -2,6 +2,10 @@
 
 use WP_CLI_Login\WP_CLI_Login_Server;
 
+if (! class_exists('PHPUnit_Framework_TestCase')) {
+    class_alias('PHPUnit\Framework\TestCase', 'PHPUnit_Framework_TestCase');
+}
+
 class WP_CLI_Login_ServerTest extends PHPUnit_Framework_TestCase
 {
     /** @test */
