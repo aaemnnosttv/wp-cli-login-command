@@ -1,12 +1,9 @@
 <?php
 
+use PHPUnit\Framework\TestCase;
 use WP_CLI_Login\WP_CLI_Login_Server;
 
-if (! class_exists('PHPUnit_Framework_TestCase')) {
-    class_alias('PHPUnit\Framework\TestCase', 'PHPUnit_Framework_TestCase');
-}
-
-class WP_CLI_Login_ServerTest extends PHPUnit_Framework_TestCase
+class WP_CLI_Login_ServerTest extends TestCase
 {
     /** @test */
     function parses_endpoint_and_key_from_uri()
