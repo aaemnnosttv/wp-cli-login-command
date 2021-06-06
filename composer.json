@@ -31,7 +31,14 @@
         "wp-cli/wp-cli-tests": "^3.0"
     },
     "scripts": {
-        "test": "phpunit",
-        "run-behat": "behat --ansi"
+        "test": [
+            "phpunit",
+            "behat"
+        ],
+        "behat": "behat",
+        "phpunit": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
     }
 }
