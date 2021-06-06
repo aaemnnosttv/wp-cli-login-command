@@ -4,7 +4,7 @@ Feature: Magic sign-in links can be emailed to the user.
     Given a WP install
     And a user john john@example.dev
     And the login plugin is installed and active
-    When I run `wp login email john --debug`
+    When I try `wp login email john --debug`
     Then STDOUT should contain:
       """
       Success: Email sent.

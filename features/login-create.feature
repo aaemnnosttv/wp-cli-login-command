@@ -59,7 +59,7 @@ Feature: Users can generate single-use magic links that will log them in automat
     And I run `wp login as jane --url-only`
     Then STDOUT should contain:
       """
-      http://localhost:8888/
+      http://localhost:8080/
       """
     And STDOUT should not contain:
       """
@@ -68,11 +68,13 @@ Feature: Users can generate single-use magic links that will log them in automat
 
   Scenario: It can log the user in using the magic link, but only once.
     Given a WP install
-    And a running web server
+    And a PHP built-in web server
     And a user evan evan@example.com
     And the login plugin is installed and active
-    And I run `echo $(wp login as evan --url-only) > magic_link`
-    And I run `ITERATION=1 curl -I -X GET --location $(cat magic_link)`
+    And I run `wp login as evan --url-only`
+    And save STDOUT as {MAGIC_LINK}
+    # Request the link the first time, following redirects.
+    And I try `curl --request GET --head --location {MAGIC_LINK}`
     Then STDOUT should contain:
       """
       302 Found
@@ -93,7 +95,8 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
       Set-Cookie: wordpresspass_
       """
-    And I run `ITERATION=2 curl -I -X GET --location $(cat magic_link)`
+    # Request the link the second time, following redirects.
+    And I try `curl --request GET --head --location {MAGIC_LINK}`
     Then STDOUT should contain:
       """
       410 Gone
@@ -102,13 +105,14 @@ Feature: Users can generate single-use magic links that will log them in automat
   @option:expires
   Scenario: The expiration time can be set in seconds
     Given a WP install
-    And a running web server
+    And a PHP built-in web server
     And a user monalisa leo@vinci.it
     And the login plugin is installed and active
 
-    When I run `wp login as monalisa --url-only --expires=1 > magic_link`
+    When I run `wp login as monalisa --url-only --expires=1`
+    And save STDOUT as {MAGIC_LINK}
     And I run `sleep 2`
-    And I run `curl -I -X GET $(cat magic_link)`
+    And I try `curl --request GET --head {MAGIC_LINK}`
 
     Then STDOUT should contain:
       """
@@ -118,11 +122,13 @@ Feature: Users can generate single-use magic links that will log them in automat
   @issue:7
   Scenario: It works for subdirectory installs too.
     Given a WP install in 'subdir'
-    And a running web server
+    And a PHP built-in web server to serve 'subdir'
     And a user evan evan@example.com
     And the login plugin is installed and active
-    And I run `wp login as evan --url-only --path=subdir > magic_link`
-    And I run `ITERATION=1 curl -I -X GET --location $(cat magic_link)`
+    And I run `wp login as evan --url-only --path=subdir`
+    And save STDOUT as {MAGIC_LINK}
+    # Request the link the first time, following redirects.
+    And I try `curl --request GET --head --location {MAGIC_LINK}`
     Then STDOUT should contain:
       """
       302 Found
@@ -135,15 +141,8 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
       Set-Cookie: wordpress_logged_in_
       """
-    And STDOUT should contain:
-      """
-      Set-Cookie: wordpressuser_
-      """
-    And STDOUT should contain:
-      """
-      Set-Cookie: wordpresspass_
-      """
-    And I run `ITERATION=2 curl -I -X GET --location $(cat magic_link)`
+    # Request the link the second time, following redirects.
+    And I try `curl --request GET --head --location {MAGIC_LINK}`
     Then STDOUT should contain:
       """
       410 Gone
@@ -152,14 +151,14 @@ Feature: Users can generate single-use magic links that will log them in automat
   Scenario: It can launch the magic url for the user automatically in their browser.
     Given a WP install
     And the login plugin is installed and active
-    And I run `WP_CLI_LOGIN_LAUNCH_WITH=echo wp login as admin --launch --debug`
+    And I try `WP_CLI_LOGIN_LAUNCH_WITH=echo wp login as admin --launch --debug`
     Then STDERR should contain:
       """
       Debug (aaemnnosttv/wp-cli-login-command): Launching browser with: echo
       """
     Then STDERR should contain:
       """
-      Debug (aaemnnosttv/wp-cli-login-command): http://localhost:8888/
+      Debug (aaemnnosttv/wp-cli-login-command): http://localhost:8080/
       """
     And STDOUT should contain:
       """
@@ -169,10 +168,11 @@ Feature: Users can generate single-use magic links that will log them in automat
   @option:redirect-url
   Scenario: It can redirect the user to an alternate URL on successful login.
     Given a WP install
-    And a running web server
+    And a PHP built-in web server
     And the login plugin is installed and active
-    And I run `wp login as admin --url-only --redirect-url=http://localhost:8888/custom-redirect > magic_link`
-    And I run `curl -IX GET $(cat magic_link)`
+    And I run `wp login as admin --url-only --redirect-url=http://localhost:8080/custom-redirect`
+    And save STDOUT as {MAGIC_LINK}
+    And I try `curl --request GET --head {MAGIC_LINK}`
     Then STDOUT should contain:
       """
       Set-Cookie: wordpress_logged_in_
@@ -183,5 +183,5 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
     Then STDOUT should contain:
       """
-      Location: http://localhost:8888/custom-redirect
+      Location: http://localhost:8080/custom-redirect
       """

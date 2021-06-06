@@ -17,23 +17,31 @@
         "files": [ "command.php" ]
     },
     "autoload-dev": {
-        "classmap": [ "plugin" ]
+        "classmap": [ "plugin" ],
+        "psr-4": {
+            "WP_CLI_Login\\Tests\\": "tests/"
+        }
     },
     "require": {
         "php": "^5.6 || ^7.0",
         "composer/semver": "^1.0"
     },
     "require-dev": {
-        "wp-cli/wp-cli": "^2",
-        "wp-cli/config-command": "^2",
-        "wp-cli/core-command": "^2",
+        "phpunit/phpunit": "^5 || ^6 || ^7",
         "wp-cli/entity-command": "^2",
         "wp-cli/extension-command": "^2",
-        "behat/behat": "~2.5",
-        "phpunit/phpunit": "^5 || ^6 || ^7"
+        "wp-cli/server-command": "^2",
+        "wp-cli/wp-cli-tests": "^3.0"
     },
     "scripts": {
-        "test": "phpunit",
-        "run-behat": "behat --ansi"
+        "test": [
+            "phpunit",
+            "behat"
+        ],
+        "behat": "behat",
+        "phpunit": "phpunit"
+    },
+    "config": {
+        "sort-packages": true
     }
 }

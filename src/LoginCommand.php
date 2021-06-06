@@ -46,6 +46,9 @@ class LoginCommand
      *
      * [--redirect-url=<url>]
      * : The URL to redirect to upon successfully logging in.
+     * ---
+     * default:
+     * ---
      *
      * [--url-only]
      * : Output the magic link URL only.
@@ -101,6 +104,9 @@ class LoginCommand
      *
      * [--redirect-url=<url>]
      * : The URL to redirect to upon successfully logging in.
+     * ---
+     * default:
+     * ---
      *
      * [--subject=<email-subject>]
      * : The email subject field.
