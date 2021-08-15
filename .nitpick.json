@@ -1,7 +1,0 @@
-{
-    "ignore": [
-        "features/*",
-        "tests/*",
-        "utils/*"
-    ]
-}

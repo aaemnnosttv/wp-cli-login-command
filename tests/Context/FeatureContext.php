@@ -54,16 +54,6 @@ class FeatureContext extends \WP_CLI\Tests\Context\FeatureContext
         );
     }
 
-    public function download_wp($subdir = '')
-    {
-        parent::download_wp($subdir);
-
-        $dest_dir = $this->variables['RUN_DIR'] . "/$subdir";
-
-        // Replace default no-mail with one that doesn't fail.
-        copy(dirname(dirname(__DIR__)) . '/utils/no-mail.php', $dest_dir . '/wp-content/mu-plugins/no-mail.php');
-    }
-
     public function start_php_server( $subdir = '' ) {
         $dir = $this->variables['RUN_DIR'] . '/';
         if ( $subdir ) {
