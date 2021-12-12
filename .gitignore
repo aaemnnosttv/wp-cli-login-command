@@ -8,3 +8,4 @@ wordpress/
 /deploy/*
 !/deploy/*.sh
 !/deploy/*.enc
+.phpunit.result.cache
