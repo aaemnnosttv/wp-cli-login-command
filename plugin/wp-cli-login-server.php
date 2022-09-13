@@ -83,10 +83,21 @@ class WP_CLI_Login_Server
      */
     public static function parseUri($uri)
     {
-        return array_slice(
-            array_merge(['',''], explode('/', $uri)),
-            -2
-        );
+        $posturl = $uri[-1];
+        if ( strcmp($posturl, "/") === 0 ) {
+  
+          return array_filter(array_slice(
+                  array_merge(['',''], explode('/', $uri)),
+                  -3
+              ));
+          
+        } else {
+  
+              return array_slice(
+                  array_merge(['',''], explode('/', $uri)),
+                  -2
+              );
+        }
     }
 
     /**
