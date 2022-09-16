@@ -53,5 +53,7 @@ jobs:
       - run: composer install
 
       - run: composer run behat
+        env:
+          WP_CLI_TEST_DBHOST: '127.0.0.1'
 
 
