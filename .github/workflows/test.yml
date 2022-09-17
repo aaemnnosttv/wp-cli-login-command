@@ -54,6 +54,6 @@ jobs:
 
       - run: composer run behat
         env:
-          WP_CLI_TEST_DBHOST: '127.0.0.1'
+          WP_CLI_TEST_DBHOST: '127.0.0.1:3306'
 
 
