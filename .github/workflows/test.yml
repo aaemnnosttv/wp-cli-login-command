@@ -43,11 +43,9 @@ jobs:
           - 3306
         options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
     env:
-      MYSQL_TCP_PORT: ${{ job.services.mysql.ports[3306] }}
-      MYSQL_HOST: 127.0.0.1:${{ job.services.mysql.ports[3306] }}
+      MYSQL_HOST: 127.0.0.1
       WP_CLI_TEST_DBUSER: wp_cli_test
       WP_CLI_TEST_DBPASS: password1
-      WP_CLI_TEST_DBHOST: 127.0.0.1:${{ job.services.mysql.ports[3306] }}
       WP_CLI_TEST_DBNAME: wp_cli_test
     steps:
       - uses: actions/checkout@v2
@@ -59,6 +57,8 @@ jobs:
           tools: composer
 
       - name: Setup MySQL
+        env:
+          MYSQL_TCP_PORT: ${{ job.services.mysql.ports[3306] }}
         run: |
             mysql -u root -e "CREATE DATABASE ${WP_CLI_TEST_DBNAME};"
             mysql -u root -e "CREATE USER ${WP_CLI_TEST_DBUSER} IDENTIFIED BY '${WP_CLI_TEST_DBPASS}';"
@@ -67,5 +67,7 @@ jobs:
       - run: composer install
 
       - run: composer run behat
+        env:
+          WP_CLI_TEST_DBHOST: 127.0.0.1:${{ job.services.mysql.ports[3306] }}
 
 
