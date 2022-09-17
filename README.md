@@ -2,7 +2,7 @@
 
 Login to WordPress with secure passwordless links.
 
-[![Build Status](https://travis-ci.org/aaemnnosttv/wp-cli-login-command.svg?branch=master)](https://travis-ci.org/aaemnnosttv/wp-cli-login-command)
+[![Test](https://github.com/aaemnnosttv/wp-cli-login-command/actions/workflows/test.yml/badge.svg)](https://github.com/aaemnnosttv/wp-cli-login-command/actions/workflows/test.yml)
 [![Packagist](https://img.shields.io/packagist/v/aaemnnosttv/wp-cli-login-command.svg)](https://packagist.org/packages/aaemnnosttv/wp-cli-login-command)
 
 Quick links: [Using](#using) | [Installation](#installation) | [Contributing](#contributing)
@@ -50,8 +50,8 @@ Create a magic sign-in link for the given user.  Outputs the created URL with so
 
 Set the lifetime of the magic link in seconds.
 
-    10 minutes = 600  
-    1 hour     = 3600  
+    10 minutes = 600
+    1 hour     = 3600
     1 day      = 86400
 
 Default: `900` (15 minutes)
