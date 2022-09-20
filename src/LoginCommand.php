@@ -434,12 +434,12 @@ class LoginCommand
      */
     private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
-        if( !set_transient(
+        if (! set_transient(
             self::OPTION . '/' . $magic->getKey(),
             json_encode($magic->generate($endpoint)),
             ceil($expires)
         )) {
-            WP_CLI::error('Failed to create transient entry for magic login. Common causes can be a crashed options table or insufficient disk space.');
+            WP_CLI::error('Failed to persist magic login.');
         }
 
         return;
