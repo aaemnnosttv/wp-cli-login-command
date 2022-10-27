@@ -70,4 +70,3 @@ jobs:
         env:
           WP_CLI_TEST_DBHOST: 127.0.0.1:${{ job.services.mysql.ports[3306] }}
 
-
