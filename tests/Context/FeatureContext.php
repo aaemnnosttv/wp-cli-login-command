@@ -59,6 +59,13 @@ class FeatureContext extends \WP_CLI\Tests\Context\FeatureContext
         if ( $subdir ) {
             $dir .= trim( $subdir, '/' ) . '/';
         }
+
+        // Temporary workaround since wp-cli 2.7 to prevent undefined constant
+        // warning when calling get_php_binary below.
+        if ( ! defined( 'WP_CLI_ROOT' ) ) {
+            define( 'WP_CLI_ROOT', $this->variables['FRAMEWORK_ROOT'] );
+        }
+
         $cmd = esc_cmd(
             '%s -S %s -t %s -c %s %s',
             get_php_binary(),
