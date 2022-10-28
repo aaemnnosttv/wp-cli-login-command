@@ -83,10 +83,16 @@ class WP_CLI_Login_Server
      */
     public static function parseUri($uri)
     {
-        return array_slice(
-            array_merge(['',''], explode('/', $uri)),
-            -2
-        );
+        $uri = trim($uri, '/');
+        $segments = explode('/', $uri);
+
+        // If there aren't at least 2 segments,
+        // return empty values to always return an array with the same length.
+        if (count($segments) < 2) {
+            return ['', ''];
+        }
+
+        return array_slice($segments, -2);
     }
 
     /**
