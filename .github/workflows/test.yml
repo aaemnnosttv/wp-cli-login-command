@@ -28,3 +28,39 @@ jobs:
       - run: composer install
 
       - run: composer run phpunit
+
+  behat:
+    strategy:
+      matrix:
+        php-version: ['8.0', '7.4', '5.6']
+    runs-on: ubuntu-latest
+    services:
+      mysql:
+        image: mysql:5
+        env:
+          MYSQL_ALLOW_EMPTY_PASSWORD: yes
+          MYSQL_DATABASE: wp_cli_test
+          MYSQL_USER: wp_cli_test
+          MYSQL_PASSWORD: password1
+          MYSQL_HOST: 127.0.0.1
+        ports:
+          - 3306
+        options: --health-cmd="mysqladmin ping" --health-interval=5s --health-timeout=2s --health-retries=3
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ matrix.php-version }}
+          tools: composer
+
+      - run: composer install
+
+      - run: composer run behat
+        env:
+          WP_CLI_TEST_DBUSER: wp_cli_test
+          WP_CLI_TEST_DBPASS: password1
+          WP_CLI_TEST_DBNAME: wp_cli_test
+          WP_CLI_TEST_DBHOST: 127.0.0.1:${{ job.services.mysql.ports[3306] }}
+
