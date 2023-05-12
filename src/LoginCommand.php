@@ -435,7 +435,7 @@ class LoginCommand
     private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
         if (! set_transient(
-            self::OPTION . '/' . $magic->getKey(),
+            self::OPTION . '/' . wp_hash($magic->getKey()),
             json_encode($magic->generate($endpoint)),
             ceil($expires)
         )) {

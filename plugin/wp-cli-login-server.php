@@ -288,7 +288,7 @@ class WP_CLI_Login_Server
      */
     private function magicKey()
     {
-        return self::OPTION . '/' . $this->publicKey;
+        return self::OPTION . '/' . wp_hash($this->publicKey);
     }
 
     /**
