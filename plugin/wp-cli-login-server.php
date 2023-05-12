@@ -36,7 +36,8 @@ function is_eligible_request()
         || (defined('DOING_AJAX') && DOING_AJAX)            // ignore ajax requests
         || (defined('DOING_CRON') && DOING_CRON)            // ignore cron requests
         || (defined('WP_INSTALLING') && WP_INSTALLING)      // WP ain't ready
-        || 'GET' != strtoupper(@$_SERVER['REQUEST_METHOD']) // GET requests only
+        || empty($_SERVER['REQUEST_METHOD'])               // Invalid request
+        || 'GET' !== strtoupper($_SERVER['REQUEST_METHOD']) // GET requests only
         || count($_GET) > 0                                 // if there is any query string
         || is_admin()                                       // ignore admin requests
     );
