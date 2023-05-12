@@ -441,8 +441,6 @@ class LoginCommand
         )) {
             WP_CLI::error('Failed to persist magic login.');
         }
-
-        return;
     }
 
     /**
