@@ -64,7 +64,7 @@ class MagicUrl
     {
         return [
             'user'         => $this->user->ID,
-            'private'      => wp_hash_password($this->signature($endpoint)),
+            'private'      => wp_hash($this->signature($endpoint)),
             'redirect_url' => $this->redirect_url,
             'time'         => time(),
         ];

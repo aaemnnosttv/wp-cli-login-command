@@ -156,7 +156,9 @@ class WP_CLI_Login_Server
             throw new InvalidUser('No user found or no longer exists.');
         }
 
-        if (! $magic->private || ! wp_check_password($this->signature($user, $magic->redirect_url), $magic->private)) {
+        if (! $magic->private
+            || ! hash_equals(wp_hash($this->signature($user, $magic->redirect_url)), $magic->private)
+        ) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
