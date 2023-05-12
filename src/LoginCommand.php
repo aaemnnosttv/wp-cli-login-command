@@ -281,7 +281,7 @@ class LoginCommand
      */
     private function confirm($question)
     {
-        fwrite(STDOUT, $question . ' [Y/n] ');
+        fwrite(STDOUT, $question . ' [y/N] ');
         $response = trim(fgets(STDIN));
 
         return ('y' == strtolower($response));
