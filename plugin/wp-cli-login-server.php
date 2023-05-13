@@ -135,6 +135,9 @@ class WP_CLI_Login_Server
             $user  = $this->validate($magic);
             $this->loginUser($user);
             $this->loginRedirect($user, $magic->redirect_url);
+        } catch (AuthenticationFailure $e) {
+            delete_transient($this->magicKey());
+            $this->abort($e);
         } catch (Exception $e) {
             $this->abort($e);
         }
