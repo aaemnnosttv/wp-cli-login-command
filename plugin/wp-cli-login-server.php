@@ -136,7 +136,7 @@ class WP_CLI_Login_Server
             $this->loginUser($user);
             $this->loginRedirect($user, $magic->redirect_url);
         } catch (AuthenticationFailure $e) {
-            delete_transient($this->magicKey());
+            $this->deleteMagic();
             $this->abort($e);
         } catch (Exception $e) {
             $this->abort($e);
@@ -190,13 +190,21 @@ class WP_CLI_Login_Server
     }
 
     /**
+     * Delete saved magic.
+     */
+    private function deleteMagic()
+    {
+        delete_transient($this->magicKey());
+    }
+
+    /**
      * Login the given user and redirect them to wp-admin.
      *
      * @param WP_User $user
      */
     private function loginUser(WP_User $user)
     {
-        delete_transient($this->magicKey());
+        $this->deleteMagic();
 
         wp_set_auth_cookie($user->ID);
 
