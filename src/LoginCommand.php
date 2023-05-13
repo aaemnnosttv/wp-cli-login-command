@@ -418,7 +418,7 @@ class LoginCommand
         static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
         $endpoint = $this->endpoint();
-        $magic    = new MagicUrl($user, $this->domain(), $redirect_url);
+        $magic    = new MagicUrl($user, $this->domain(), time() + $expires, $redirect_url);
 
         $this->persistMagicUrl($magic, $endpoint, $expires);
 

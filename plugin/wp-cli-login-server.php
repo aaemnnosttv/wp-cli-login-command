@@ -296,19 +296,19 @@ class WP_CLI_Login_Server
     /**
      * Build the signature to check against the private key for this request.
      *
-     * @param WP_User $user
-     * @param string $redirect_url
+     * @param Magic Login data.
      *
      * @return string
      */
-    private function signature(WP_User $user, $redirect_url)
+    private function signature(Magic $magic)
     {
         return join('|', [
             $this->publicKey,
             $this->endpoint,
             parse_url($this->homeUrl(), PHP_URL_HOST),
-            $user->ID,
-            $redirect_url,
+            $magic->user,
+            $magic->expires_at,
+            $magic->redirect_url,
         ]);
     }
 
@@ -329,6 +329,7 @@ class WP_CLI_Login_Server
 /**
  * @property-read int $user
  * @property-read string $private
+ * @property-read int $expires_at
  * @property-read string $redirect_url
  */
 class Magic {

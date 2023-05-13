@@ -24,6 +24,11 @@ class MagicUrl
     private $domain;
 
     /**
+     * @var int Timestamp that the magic url is valid until.
+     */
+    private $expires_at;
+
+    /**
      * @var string URL to redirect to upon successful login.
      */
     private $redirect_url;
@@ -32,14 +37,16 @@ class MagicUrl
      * MagicUrl constructor.
      *
      * @param WP_User $user
-     * @param string $domain
-     * @param string $redirect_url
+     * @param string  $domain
+     * @param int $expires_at
+     * @param string  $redirect_url
      */
-    public function __construct(WP_User $user, $domain, $redirect_url = null)
+    public function __construct(WP_User $user, $domain, $expires_at, $redirect_url = null)
     {
         $this->user = $user;
         $this->domain = $domain;
         $this->key = $this->newPublicKey();
+        $this->expires_at = ceil($expires_at);
         $this->redirect_url = $redirect_url;
     }
 
@@ -66,7 +73,7 @@ class MagicUrl
             'user'         => $this->user->ID,
             'private'      => wp_hash($this->signature($endpoint)),
             'redirect_url' => $this->redirect_url,
-            'time'         => time(),
+            'expires_at'   => $this->expires_at,
         ];
     }
 
@@ -84,6 +91,7 @@ class MagicUrl
             $endpoint,
             $this->domain,
             $this->user->ID,
+            $this->expires_at,
             $this->redirect_url,
         ]);
     }
