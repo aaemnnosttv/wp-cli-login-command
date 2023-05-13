@@ -160,7 +160,7 @@ class WP_CLI_Login_Server
         }
 
         if (! $magic->private
-            || ! hash_equals(wp_hash($this->signature($user, $magic->redirect_url)), $magic->private)
+            || ! hash_equals($magic->private, wp_hash($this->signature($magic)))
         ) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
