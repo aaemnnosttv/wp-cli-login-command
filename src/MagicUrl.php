@@ -69,9 +69,13 @@ class MagicUrl
      */
     public function generate($endpoint)
     {
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $private_bin = sodium_crypto_generichash($this->signature($endpoint), $key);
+
         return [
             'user'         => $this->user->ID,
-            'private'      => wp_hash($this->signature($endpoint)),
+            'private'      => sodium_bin2base64($private_bin, SODIUM_BASE64_VARIANT_URLSAFE),
             'redirect_url' => $this->redirect_url,
             'expires_at'   => $this->expires_at,
         ];

@@ -159,8 +159,11 @@ class WP_CLI_Login_Server
             throw new InvalidUser('No user found or no longer exists.');
         }
 
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $private_bin = sodium_crypto_generichash($this->signature($magic), $key);
         if (! $magic->private
-            || ! hash_equals($magic->private, wp_hash($this->signature($magic)))
+            || ! hash_equals($magic->private, sodium_bin2base64($private_bin, SODIUM_BASE64_VARIANT_URLSAFE))
         ) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
@@ -301,7 +304,11 @@ class WP_CLI_Login_Server
      */
     private function magicKey()
     {
-        return self::OPTION . '/' . wp_hash($this->publicKey);
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $bin_hash = sodium_crypto_generichash($this->publicKey, $key);
+
+        return self::OPTION . '/' . sodium_bin2base64($bin_hash, SODIUM_BASE64_VARIANT_URLSAFE);
     }
 
     /**

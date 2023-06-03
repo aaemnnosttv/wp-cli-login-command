@@ -434,8 +434,12 @@ class LoginCommand
      */
     private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $bin_hash = sodium_crypto_generichash($magic->getKey(), $key);
+
         if (! set_transient(
-            self::OPTION . '/' . wp_hash($magic->getKey()),
+            self::OPTION . '/' . sodium_bin2base64($bin_hash, SODIUM_BASE64_VARIANT_URLSAFE),
             json_encode($magic->generate($endpoint)),
             ceil($expires)
         )) {
