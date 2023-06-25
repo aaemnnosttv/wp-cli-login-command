@@ -6,7 +6,7 @@
  * Author URI: https://aaemnnost.tv
  * Plugin URI: https://aaemnnost.tv/wp-cli-commands/login/
  *
- * Version: 1.4
+ * Version: 1.5
  */
 
 namespace WP_CLI_Login;
@@ -36,7 +36,8 @@ function is_eligible_request()
         || (defined('DOING_AJAX') && DOING_AJAX)            // ignore ajax requests
         || (defined('DOING_CRON') && DOING_CRON)            // ignore cron requests
         || (defined('WP_INSTALLING') && WP_INSTALLING)      // WP ain't ready
-        || 'GET' != strtoupper(@$_SERVER['REQUEST_METHOD']) // GET requests only
+        || empty($_SERVER['REQUEST_METHOD'])               // Invalid request
+        || 'GET' !== strtoupper($_SERVER['REQUEST_METHOD']) // GET requests only
         || count($_GET) > 0                                 // if there is any query string
         || is_admin()                                       // ignore admin requests
     );
@@ -135,6 +136,7 @@ class WP_CLI_Login_Server
             $this->loginUser($user);
             $this->loginRedirect($user, $magic->redirect_url);
         } catch (Exception $e) {
+            $this->deleteMagic();
             $this->abort($e);
         }
     }
@@ -155,7 +157,12 @@ class WP_CLI_Login_Server
             throw new InvalidUser('No user found or no longer exists.');
         }
 
-        if (! $magic->private || ! wp_check_password($this->signature($user, $magic->redirect_url), $magic->private)) {
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $private_bin = sodium_crypto_generichash($this->signature($magic), $key);
+        if (! $magic->private
+            || ! hash_equals($magic->private, sodium_bin2base64($private_bin, SODIUM_BASE64_VARIANT_URLSAFE))
+        ) {
             throw new AuthenticationFailure('Magic login authentication failed.');
         }
 
@@ -184,13 +191,21 @@ class WP_CLI_Login_Server
     }
 
     /**
+     * Delete saved magic.
+     */
+    private function deleteMagic()
+    {
+        delete_transient($this->magicKey());
+    }
+
+    /**
      * Login the given user and redirect them to wp-admin.
      *
      * @param WP_User $user
      */
     private function loginUser(WP_User $user)
     {
-        delete_transient($this->magicKey());
+        $this->deleteMagic();
 
         wp_set_auth_cookie($user->ID);
 
@@ -287,25 +302,29 @@ class WP_CLI_Login_Server
      */
     private function magicKey()
     {
-        return self::OPTION . '/' . $this->publicKey;
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $bin_hash = sodium_crypto_generichash($this->publicKey, $key);
+
+        return self::OPTION . '/' . sodium_bin2base64($bin_hash, SODIUM_BASE64_VARIANT_URLSAFE);
     }
 
     /**
      * Build the signature to check against the private key for this request.
      *
-     * @param WP_User $user
-     * @param string $redirect_url
+     * @param Magic Login data.
      *
      * @return string
      */
-    private function signature(WP_User $user, $redirect_url)
+    private function signature(Magic $magic)
     {
         return join('|', [
             $this->publicKey,
             $this->endpoint,
             parse_url($this->homeUrl(), PHP_URL_HOST),
-            $user->ID,
-            $redirect_url,
+            $magic->user,
+            $magic->expires_at,
+            $magic->redirect_url,
         ]);
     }
 
@@ -326,6 +345,7 @@ class WP_CLI_Login_Server
 /**
  * @property-read int $user
  * @property-read string $private
+ * @property-read int $expires_at
  * @property-read string $redirect_url
  */
 class Magic {

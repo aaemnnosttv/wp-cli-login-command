@@ -21,7 +21,7 @@ class LoginCommand
     /**
      * Required version constraint of the wp-cli-login-server companion plugin.
      */
-    const REQUIRED_PLUGIN_VERSION = '^1.3';
+    const REQUIRED_PLUGIN_VERSION = '^1.5';
 
     /**
      * Package instance
@@ -281,7 +281,7 @@ class LoginCommand
      */
     private function confirm($question)
     {
-        fwrite(STDOUT, $question . ' [Y/n] ');
+        fwrite(STDOUT, $question . ' [y/N] ');
         $response = trim(fgets(STDIN));
 
         return ('y' == strtolower($response));
@@ -418,7 +418,7 @@ class LoginCommand
         static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
         $endpoint = $this->endpoint();
-        $magic    = new MagicUrl($user, $this->domain(), $redirect_url);
+        $magic    = new MagicUrl($user, $this->domain(), time() + $expires, $redirect_url);
 
         $this->persistMagicUrl($magic, $endpoint, $expires);
 
@@ -434,15 +434,17 @@ class LoginCommand
      */
     private function persistMagicUrl(MagicUrl $magic, $endpoint, $expires)
     {
+        // We need to hash the salt to produce a key that won't exceed the maximum of 64 bytes.
+        $key = sodium_crypto_generichash(wp_salt('auth'));
+        $bin_hash = sodium_crypto_generichash($magic->getKey(), $key);
+
         if (! set_transient(
-            self::OPTION . '/' . $magic->getKey(),
+            self::OPTION . '/' . sodium_bin2base64($bin_hash, SODIUM_BASE64_VARIANT_URLSAFE),
             json_encode($magic->generate($endpoint)),
             ceil($expires)
         )) {
             WP_CLI::error('Failed to persist magic login.');
         }
-
-        return;
     }
 
     /**
