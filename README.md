@@ -111,6 +111,10 @@ If the plugin is already installed, you will be prompted to overwrite it.
 
 Optionally activate the plugin immediately after installation.
 
+#### `--mu`
+
+Install as a Must Use plugin.
+
 #### `--yes`
 
 Suppress prompting for confirmation to overwrite the existing plugin.
