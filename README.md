@@ -62,6 +62,11 @@ Set the URL to redirect to upon successfully logging in. Defaults to `admin_url(
 
 > Note: The redirect is executed using [`wp_safe_redirect`](https://developer.wordpress.org/reference/functions/wp_safe_redirect/) which restricts the destination URL using a list of allowed hosts. By default, this is limited to the domain of the site, but can be extended using the [`allowed_redirect_hosts`](https://developer.wordpress.org/reference/hooks/allowed_redirect_hosts/) filter.
 
+
+#### `--prefix=<path>`
+
+Optionally prepend a path prefix to the magic link URL. Defaults to `/`.
+
 #### `--url-only`
 
 Outputs the created sign-in URL only. Great for scripting, piping to your clipboard, or anything else you can think of.
@@ -85,6 +90,10 @@ Email a magic sign-in link to the given user.  Sends a nice HTML email to the us
 #### `--redirect-url=<url>`
 
 [See above.](#--redirect-urlurl)
+
+#### `--prefix=<path>`
+
+[See above.](#--prefixpath)
 
 #### `--subject=<email-subject>`
 

@@ -50,6 +50,12 @@ class LoginCommand
      * default:
      * ---
      *
+     * [--prefix=<path>]
+     * : The prefixed path added to the log-in URL.
+     * ---
+     * default:
+     * ---
+     *
      * [--url-only]
      * : Output the magic link URL only.
      *
@@ -69,7 +75,7 @@ class LoginCommand
 
         $user      = $this->lookupUser($user_locator);
         $expires   = human_time_diff(time(), time() + absint($assoc['expires']));
-        $magic_url = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url']);
+        $magic_url = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url'], $assoc['prefix']);
 
         if (WP_CLI\Utils\get_flag_value($assoc, 'url-only')) {
             WP_CLI::line($magic_url);
@@ -108,6 +114,13 @@ class LoginCommand
      * default:
      * ---
      *
+     * [--prefix=<prefix>]
+     * : The prefixed path added to the log-in URL.
+     * ---
+     * default:
+     * ---
+     *
+     *
      * [--subject=<email-subject>]
      * : The email subject field.
      * ---
@@ -132,7 +145,7 @@ class LoginCommand
 
         $user          = $this->lookupUser($user_locator);
         $expires       = human_time_diff(time(), time() + absint($assoc['expires']));
-        $magic_url     = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url']);
+        $magic_url     = $this->makeMagicUrl($user, $assoc['expires'], $assoc['redirect-url'], $assoc['prefix']);
         $domain        = $this->domain();
         $subject       = $this->mustacheRender(
             $assoc['subject'],
@@ -410,10 +423,11 @@ class LoginCommand
      * @param WP_User  $user User to create login URL for.
      * @param int      $expires Number of seconds from now until the magic link expires.
      * @param string   $redirect_url URL to redirect to upon successfully logging in.
+     * @param string   $prefix URL to redirect to upon successfully logging in.
      *
      * @return string URL
      */
-    private function makeMagicUrl(WP_User $user, $expires, $redirect_url)
+    private function makeMagicUrl(WP_User $user, $expires, $redirect_url, $prefix)
     {
         static::debug("Generating a new magic login for User $user->ID expiring in {$expires} seconds.");
 
@@ -422,7 +436,7 @@ class LoginCommand
 
         $this->persistMagicUrl($magic, $endpoint, $expires);
 
-        return $this->homeUrl($endpoint . '/' . $magic->getKey());
+        return $this->homeUrl(trailingslashit($prefix) . $endpoint . '/' . $magic->getKey());
     }
 
     /**

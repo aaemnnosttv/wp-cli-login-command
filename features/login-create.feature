@@ -185,3 +185,14 @@ Feature: Users can generate single-use magic links that will log them in automat
       """
       Location: http://localhost:8080/custom-redirect
       """
+
+  @option:prefix
+  Scenario: It can prepend a path prefix to the magic link URL
+    Given a WP install
+    And a PHP built-in web server
+    And the login plugin is installed and active
+    And I run `wp login as admin --url-only --prefix=subpath`
+    Then STDOUT should contain:
+      """
+      http://localhost:8080/subpath/
+      """
