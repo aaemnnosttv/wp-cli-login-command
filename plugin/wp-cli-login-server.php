@@ -43,6 +43,50 @@ function is_eligible_request()
     );
 }
 
+/**
+ * Handle the second leg of the magic login on wp-login.php.
+ *
+ * CDN/proxy layers (e.g. Cloudflare with "Cache Everything") strip Set-Cookie
+ * headers from responses on arbitrary URLs. wp-login.php is universally excluded
+ * from CDN caching, so setting cookies here guarantees they reach the browser.
+ */
+function handle_login_handoff()
+{
+    if (empty($_GET['wp_cli_login_token'])) {
+        return;
+    }
+
+    $token = sanitize_text_field($_GET['wp_cli_login_token']);
+    $data  = get_transient('wp_cli_login/handoff/' . $token);
+    delete_transient('wp_cli_login/handoff/' . $token);
+
+    if (! $data || ! ($user = new \WP_User($data['user_id'])) || ! $user->exists()) {
+        wp_die('The magic login handoff has expired or is invalid.', '', ['response' => 410]);
+    }
+
+    wp_set_auth_cookie($user->ID);
+    do_action('wp_cli_login/login', $user->user_login, $user);
+    do_action('wp_login', $user->user_login, $user);
+
+    $redirect_to = $data['redirect_url'] ?: admin_url();
+    $redirect_to = apply_filters('login_redirect', $redirect_to, '', $user);
+    $redirect_to = apply_filters('wp_cli_login/login_redirect', $redirect_to, '', $user);
+
+    if ((empty($redirect_to) || $redirect_to == 'wp-admin/' || $redirect_to == admin_url())) {
+        if (is_multisite() && ! get_active_blog_for_user($user->ID) && ! is_super_admin($user->ID)) {
+            $redirect_to = user_admin_url();
+        } elseif (is_multisite() && ! $user->has_cap('read')) {
+            $redirect_to = get_dashboard_url($user->ID);
+        } elseif (! $user->has_cap('edit_posts')) {
+            $redirect_to = $user->has_cap('read') ? admin_url('profile.php') : home_url();
+        }
+    }
+
+    wp_safe_redirect($redirect_to);
+    exit;
+}
+add_action('login_init', __NAMESPACE__ . '\\handle_login_handoff');
+
 
 
 class WP_CLI_Login_Server
@@ -127,14 +171,25 @@ class WP_CLI_Login_Server
 
     /**
      * Attempt the magic login.
+     *
+     * Rather than setting auth cookies directly (which CDN/proxy layers like
+     * Cloudflare may strip), hand off to wp-login.php via a short-lived token.
      */
     public function run()
     {
         try {
             $magic = $this->loadMagic();
             $user  = $this->validate($magic);
-            $this->loginUser($user);
-            $this->loginRedirect($user, $magic->redirect_url);
+            $this->deleteMagic();
+
+            $token = bin2hex(random_bytes(16));
+            set_transient('wp_cli_login/handoff/' . $token, [
+                'user_id'      => $user->ID,
+                'redirect_url' => $magic->redirect_url,
+            ], 30);
+
+            wp_redirect(add_query_arg('wp_cli_login_token', $token, wp_login_url()));
+            exit;
         } catch (Exception $e) {
             $this->deleteMagic();
             $this->abort($e);
@@ -196,88 +251,6 @@ class WP_CLI_Login_Server
     private function deleteMagic()
     {
         delete_transient($this->magicKey());
-    }
-
-    /**
-     * Login the given user and redirect them to wp-admin.
-     *
-     * @param WP_User $user
-     */
-    private function loginUser(WP_User $user)
-    {
-        $this->deleteMagic();
-
-        wp_set_auth_cookie($user->ID);
-
-        /**
-         * Fires after the user has successfully logged in via the WP-CLI Login Server.
-         *
-         * @param string  $user_login Username.
-         * @param WP_User $user       WP_User object of the logged-in user.
-         */
-        do_action('wp_cli_login/login', $user->user_login, $user);
-
-        /**
-         * Fires after the user has successfully logged in.
-         *
-         * @param string  $user_login Username.
-         * @param WP_User $user       WP_User object of the logged-in user.
-         */
-        do_action('wp_login', $user->user_login, $user);
-    }
-
-    /**
-     * Redirect the user after logging in.
-     *
-     * Mostly copied from wp-login.php
-     *
-     * @param WP_User $user
-     * @param string  $redirect_url
-     */
-    private function loginRedirect(WP_User $user, $redirect_url)
-    {
-        $redirect_to = $redirect_url ?: admin_url();
-
-        /**
-         * Filters the login redirect URL.
-         *
-         * @param string           $redirect_to           The redirect destination URL.
-         * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
-         * @param WP_User          $user                  WP_User object.
-         */
-        $redirect_to = apply_filters('login_redirect', $redirect_to, '', $user);
-
-        /**
-         * Filters the login redirect URL for WP-CLI Login Server requests.
-         *
-         * @param string           $redirect_to           The redirect destination URL.
-         * @param string           $requested_redirect_to The requested redirect destination URL passed as a parameter.
-         * @param WP_User          $user                  WP_User object.
-         */
-        $redirect_to = apply_filters('wp_cli_login/login_redirect', $redirect_to, '', $user);
-
-        /**
-         * Figure out where to redirect the user for the default wp-admin URL based on the user's capabilities.
-         */
-        if ((empty($redirect_to) || $redirect_to == 'wp-admin/' || $redirect_to == admin_url())) {
-            // If the user doesn't belong to a blog, send them to user admin. If the user can't edit posts, send them to their profile.
-            if (is_multisite() && ! get_active_blog_for_user($user->ID) && ! is_super_admin($user->ID)) {
-                $redirect_to = user_admin_url();
-            } elseif (is_multisite() && ! $user->has_cap('read')) {
-                $redirect_to = get_dashboard_url($user->ID);
-            } elseif (! $user->has_cap('edit_posts')) {
-                $redirect_to = $user->has_cap('read') ? admin_url('profile.php') : home_url();
-            }
-
-            wp_redirect($redirect_to);
-            exit;
-        }
-
-        /**
-         * Redirect safely to the URL provided.
-         */
-        wp_safe_redirect($redirect_to);
-        exit;
     }
 
     /**
